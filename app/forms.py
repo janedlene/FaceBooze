@@ -31,8 +31,8 @@ class CustomerForm(forms.Form):
 
 class ReviewForm(forms.Form):
     title = forms.CharField(label='Title', max_length=200)
-        body = forms.CharField(label='Body', max_length=65000)
-        rating = forms.IntegerField(label='Rating')
+    body = forms.CharField(label='Body', max_length=65000)
+    rating = forms.IntegerField(label='Rating')
 
 class RecipeForm(forms.Form):
 	title = forms.CharField(label='Title', max_length=50)

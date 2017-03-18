@@ -4,7 +4,7 @@ from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 
-from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm
+from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm
 
 def logout(request):
     context = {}
