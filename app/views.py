@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth import hashers
 
-from .forms import SupplierForm, CustomerForm, LoginForm
+from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm
 
 def logout(request):
     context = {}
@@ -101,6 +101,48 @@ def index(request):
         return HttpResponseRedirect(reverse('login'))
     context = {}
     return render(request, 'index.html', context)
+
+
+def createReview(request):
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            body = form.cleaned_data['body']
+            rating = form.cleaned_data['rating']
+            review = [title, body, rating]
+            with connection.cursor() as cursor:
+                cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
+            return HttpResponseRedirect(reverse('index'))
+    else:
+        form = ReviewForm()
+    context = {'form':form}
+    return render(request, 'createReview.html', context)
+
+def sellRecipe(request):
+    if request.method == 'POST':
+        form = RecipeForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            directions = form.cleaned_data['directions']
+            serving_size = form.cleaned_data['serving_size']
+            cooking_time = form.cleaned_data['cooking_time']
+            cuisine_type = form.cleaned_data['cuisine_type']
+            price = form.cleaned_data['price']
+            recipe = [title, directions, serving_size, cooking_time, cuisine_type, price]
+            with connection.cursor() as cursor:
+                query = cursor.execute("INSERT INTO Recipe(title, directions, serving_size, cooking_time, cuisine_type, price) VALUES (%s, %s, %s, %s, %s, %s)", recipe)
+            if query:
+                messages.success(request, 'Successfully created new recipe called ' + title)
+                #return HttpResponseRedirect(reverse('sellRecipe'))
+            else:
+                messages.error(request, 'Could not create new recipe')
+            #return HttpResponseRedirect(reverse('sellRecipe'))
+    else:
+        form = RecipeForm()
+    context = {'form': form}
+    return render(request, 'sellRecipe.html', context)
+
 
 #### MYSQL QUERY EXAMPLE
 # def my_custom_sql(self):

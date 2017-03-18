@@ -27,3 +27,18 @@ class CustomerForm(forms.Form):
 	city = forms.CharField(label='City', max_length=50)
 	state = forms.CharField(label='State', max_length=2)
 	zip_code = forms.IntegerField(label='Zip Code')
+
+
+class ReviewForm(forms.Form):
+    title = forms.CharField(label='Title', max_length=200)
+    body = forms.CharField(label='Body', max_length=65000)
+    rating = forms.IntegerField(label='Rating')
+
+class RecipeForm(forms.Form):
+	title = forms.CharField(label='Title', max_length=50)
+	directions = forms.CharField(label="Directions", max_length=65000)
+	serving_size = forms.DecimalField(label="Serving Size", max_digits=2)
+	cooking_time = forms.DecimalField(label="Cooking Time", max_digits=3)
+	cuisine_type = forms.CharField(label="Cuisine Type", max_length=20)
+	price = forms.DecimalField(label="Price", max_digits=3, decimal_places=2)
+
