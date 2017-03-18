@@ -9,4 +9,5 @@ urlpatterns = [
     url(r'^register/customer/$', views.customerRegister, name='customer-register'),
     url(r'^home/$', views.index, name='index'),
     url(r'^home/review/$', views.reviewRegister, name='review-register')
+    url(r'^sellrecipe/$', views.sellRecipe, name='sell-recipe'),
 ]
