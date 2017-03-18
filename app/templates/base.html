@@ -4,17 +4,25 @@
 <head>
 	<!-- Latest compiled and minified CSS -->
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+	<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </head>
 
 <body>
-	<nav class="navbar navbar-default navbar-fixed-top" style="background:#000000; border-color:#483E85;" >
+	<nav class="navbar navbar-default navbar-fixed-top" style="background:#000000; border-color:#483E85; text-align:center;" >
 		<div class="container-fluid">
 			<div class="navbar-header">
-				<a class="navbar-brand" href="{% url 'login' %}" style="color:white;">lazychef</a>
+				{% if not request.session.login %}
+					<a class="navbar-brand" href="{% url 'login' %}" style="color:white;">lazychef</a>
+				{% else %}
+					<a class="navbar-brand" href="{% url 'index' %}" style="color:white;">lazychef</a>
+				{% endif %}
 			</div>
-			<ul class="nav navbar-nav navbar-right">
-				<li><a class="btn btn-primary btn" href="{% url 'logout' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">Log Out</a></li>
-			</ul>
+			{% if request.session.login %}
+				<ul class="nav navbar-nav navbar-right">
+					<li><a class="btn btn-primary btn" href="{% url 'logout' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">Log Out</a></li>
+				</ul>
+			{% endif %}
 		</div>
 	</nav>
 	<div id="content" style="padding-top:50px;">

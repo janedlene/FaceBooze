@@ -1,6 +1,26 @@
-<h1>Supplier Sign Up</h1>
-<form action="" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit" />
-</form>
+{% extends "base.html" %}
+
+{% load widget_tweaks %}|
+
+{% block content %}
+
+<div class="container"><h1 style="margin-top:50px; text-align:center;">Supplier Sign Up</h1></div>
+
+<div style="margin-left:500px; margin-right:500px; margin-top:25px; margin-bottom:50px; text-align:center;">
+	<form action="" method="post">
+	    {% csrf_token %}
+	    {% for field in form %}
+			<div class="form-group">
+				<div class="col-md-3">
+	            	<label class="control-label form-label" for="id_{{ field.name }}">{{ field.label }}</label>:
+	            </div>
+	            <div class="col-md-9">
+	            	{{ field | add_class:"form-control"}}
+	            </div>
+	    	</div>
+		{% endfor %}
+	    <input style="margin-top:15px; margin-bottom:15px; width:50%;" class="btn btn-primary" type="submit" name="submit" value="Sign Up" />
+	</form>
+</div>
+
+{% endblock %}

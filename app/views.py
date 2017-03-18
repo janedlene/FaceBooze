@@ -3,6 +3,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
+from django.contrib.auth import hashers
 
 from .forms import SupplierForm, CustomerForm, LoginForm
 
@@ -22,17 +23,25 @@ def login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            user = [username, password]
-            with connection.cursor() as cursor:
-                query = cursor.execute("SELECT username FROM Customer WHERE username = %s AND password = %s", user)
+            user = [username]
+            if request.POST.get('submit', None) == 'Customer Login':
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT password FROM Customer WHERE username = %s", user)
+            else:
+                with connection.cursor() as cursor:
+                    cursor.execute("SELECT password FROM Supplier WHERE username = %s", user)
+            query = cursor.fetchone()
             if query:
-                request.session["login"] = True
-                messages.success(request, 'Successfully logged in')
-                return HttpResponseRedirect(reverse('index'))
+                query = query[0]
+                if hashers.check_password(password, query):
+                    request.session["login"] = True
+                    messages.success(request, 'Successfully logged in')
+                    return HttpResponseRedirect(reverse('index'))
             messages.error(request, 'Incorrect username/password')
             return HttpResponseRedirect(reverse('login'))
-    else:
-        form = LoginForm()
+        else:
+            messages.error(request, 'Must fill out all fields')
+    form = LoginForm()
     context = {'form': form}
     return render(request, 'login.html', context)
 
@@ -42,7 +51,7 @@ def customerRegister(request):
         form = CustomerForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
+            password = hashers.make_password(form.cleaned_data['password'])
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
             email = form.cleaned_data['email']
@@ -55,8 +64,9 @@ def customerRegister(request):
             with connection.cursor() as cursor:
                 cursor.execute("INSERT INTO Customer(username, password, first_name, last_name, email, phone_number, street, city, state, zip_code) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", customer)
             return HttpResponseRedirect(reverse('login'))
-    else:
-        form = CustomerForm()
+        else:
+            messages.error(request, 'Must fill out all fields')
+    form = CustomerForm()
     context = {'form': form}
     return render(request, 'customerRegister.html', context)
 
@@ -65,6 +75,8 @@ def supplierRegister(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
         if form.is_valid():
+            username = form.cleaned_data['username']
+            password = hashers.make_password(form.cleaned_data['password'])
             org_name = form.cleaned_data['org_name']
             email = form.cleaned_data['email']
             phone_number = form.cleaned_data['phone_number']
@@ -73,16 +85,20 @@ def supplierRegister(request):
             city = form.cleaned_data['city']
             state = form.cleaned_data['state']
             zip_code = form.cleaned_data['zip_code']
-            supplier = [org_name, email, phone_number, website, street, city, state, zip_code]
+            supplier = [username, password, org_name, email, phone_number, website, street, city, state, zip_code]
             with connection.cursor() as cursor:
-                cursor.execute("INSERT INTO Supplier(org_name, email, phone_number, website, street, city, state, zip_code) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)", supplier)
+                cursor.execute("INSERT INTO Supplier(username, password, org_name, email, phone_number, website, street, city, state, zip_code) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", supplier)
             return HttpResponseRedirect(reverse('login'))
-    else:
-        form = SupplierForm()
+        else:
+            messages.error(request, 'Must fill out all fields')
+    form = SupplierForm()
     context = {'form': form}
     return render(request, 'supplierRegister.html', context)
 
 def index(request):
+    if not request.session["login"]:
+        messages.error(request, 'Must login to view')
+        return HttpResponseRedirect(reverse('login'))
     context = {}
     return render(request, 'index.html', context)
 
