@@ -87,7 +87,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-def reviewRegister(request):
+def createReview(request):
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
@@ -101,7 +101,7 @@ def reviewRegister(request):
     else:
         form = ReviewForm()
     context = {'form':form}
-    return render(request, 'reviewRegister.html', context)
+    return render(request, 'createReview.html', context)
 
 def sellRecipe(request):
     if request.method == 'POST':
