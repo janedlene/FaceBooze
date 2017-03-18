@@ -2,10 +2,19 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db import connection
 from django.core.urlresolvers import reverse
+from django.contrib import messages
 
 from .forms import SupplierForm, CustomerForm, LoginForm
 
-
+def logout(request):
+    context = {}
+    if request.session["login"]:
+        request.session["login"] = False
+        messages.success(request, 'Successfully logged out')
+    else:
+        messages.error(request, 'Cannot logout if you are not logged in')
+    return HttpResponseRedirect(reverse('login'))
+    
 
 def login(request):
     if request.method == 'POST':
@@ -17,8 +26,11 @@ def login(request):
             with connection.cursor() as cursor:
                 query = cursor.execute("SELECT username FROM Customer WHERE username = %s AND password = %s", user)
             if query:
-                return HttpResponse("Successfully logged in")
-            return HttpResponse("Incorrect username/password")
+                request.session["login"] = True
+                messages.success(request, 'Successfully logged in')
+                return HttpResponseRedirect(reverse('index'))
+            messages.error(request, 'Incorrect username/password')
+            return HttpResponseRedirect(reverse('login'))
     else:
         form = LoginForm()
     context = {'form': form}
@@ -70,12 +82,17 @@ def supplierRegister(request):
     context = {'form': form}
     return render(request, 'supplierRegister.html', context)
 
-def my_custom_sql(self):
-    with connection.cursor() as cursor:
-        cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
-        cursor.execute("SELECT foo FROM bar WHERE baz = %s", [self.baz])
-        row = cursor.fetchone()
+def index(request):
+    context = {}
+    return render(request, 'index.html', context)
 
-    return row
+#### MYSQL QUERY EXAMPLE
+# def my_custom_sql(self):
+#     with connection.cursor() as cursor:
+#         cursor.execute("UPDATE bar SET foo = 1 WHERE baz = %s", [self.baz])
+#         cursor.execute("SELECT foo FROM bar WHERE baz = %s", [self.baz])
+#         row = cursor.fetchone()
+
+#     return row
 
 # Create your views here.

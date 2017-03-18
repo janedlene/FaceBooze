@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+
+<body>
+	<nav class="navbar navbar-default navbar-fixed-top" style="background:#000000; border-color:#483E85;" >
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<a class="navbar-brand" href="{% url 'login' %}" style="color:white;">lazychef</a>
+			</div>
+			<ul class="nav navbar-nav navbar-right">
+				<li><a class="btn btn-primary btn" href="{% url 'logout' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">Log Out</a></li>
+			</ul>
+		</div>
+	</nav>
+	<div id="content" style="padding-top:50px;">
+		{% if messages %}
+			{% for message in messages %}
+				{% if message.tags == "error" %}
+					<p class="alert alert-danger"> {{message}} </p>
+				{% elif message.tags == "success" %}
+					<p class="alert alert-success"> {{message}} </p>
+				{% elif message.tags == "info" %}
+					<p class="alert alert-info"> {{message}} </p>
+				{% elif message.tags == "warning" %}
+					<p class="alert alert-warning"> {{message}} </p>
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+		{% block content %}
+		{% endblock %}
+	</div>
+</body>
+</html>
