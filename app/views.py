@@ -18,6 +18,7 @@ def logout(request):
     
 
 def login(request):
+    cursor = connection.cursor()
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -25,11 +26,9 @@ def login(request):
             password = form.cleaned_data['password']
             user = [username]
             if request.POST.get('submit', None) == 'Customer Login':
-                with connection.cursor() as cursor:
-                    cursor.execute("SELECT password FROM Customer WHERE username = %s", user)
+                cursor.execute("SELECT password FROM Customer WHERE username = %s", user)
             else:
-                with connection.cursor() as cursor:
-                    cursor.execute("SELECT password FROM Supplier WHERE username = %s", user)
+                cursor.execute("SELECT password FROM Supplier WHERE username = %s", user)
             query = cursor.fetchone()
             if query:
                 query = query[0]
