@@ -27,3 +27,8 @@ class CustomerForm(forms.Form):
 	city = forms.CharField(label='City', max_length=50)
 	state = forms.CharField(label='State', max_length=2)
 	zip_code = forms.IntegerField(label='Zip Code')
+
+class ReviewForm(forms.Form):
+    title = forms.CharField(label='Title', max_length=200)
+        body = forms.CharField(label='Body', max_length=65000)
+        rating = forms.IntegerField(label='Rating')

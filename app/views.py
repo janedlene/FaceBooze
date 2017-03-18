@@ -86,6 +86,22 @@ def index(request):
     context = {}
     return render(request, 'index.html', context)
 
+def reviewRegister(request):
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            body = form.cleaned_data['body']
+            rating = form.cleaned_data['rating']
+            review = [title, body, rating]
+            with connection.cursor() as cursor:
+                cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
+            return HttpResponseRedirect(reverse('index'))
+    else:
+        form = ReviewForm()
+    context = {'form':form}
+    return render(request, 'reviewRegister.html', context)
+
 #### MYSQL QUERY EXAMPLE
 # def my_custom_sql(self):
 #     with connection.cursor() as cursor:
