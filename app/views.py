@@ -7,10 +7,22 @@ from django.contrib.auth import hashers
 
 from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm
 
+def login_required(f):
+    def wrap(request, *args, **kwargs):
+        # try authenticating the user
+        if request.session.get('lazylogin', None) == None:
+            messages.error(request, "Must login to lazychef.")
+            return HttpResponseRedirect(reverse('login'))
+        return f(request, *args, **kwargs)
+    return wrap
+
+@login_required
 def logout(request):
     context = {}
-    if request.session["login"]:
-        request.session["login"] = False
+    if request.session.get('lazylogin', None) != None:
+        print request.session["lazylogin"]
+        del request.session["lazylogin"]
+        request.session.modified = True
         messages.success(request, 'Successfully logged out')
     else:
         messages.error(request, 'Cannot logout if you are not logged in')
@@ -18,6 +30,9 @@ def logout(request):
     
 
 def login(request):
+    # if logged in redirect to home
+    if request.session.get('lazylogin', None) != None:
+        return HttpResponseRedirect(reverse('index'))
     cursor = connection.cursor()
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -33,7 +48,7 @@ def login(request):
             if query:
                 query = query[0]
                 if hashers.check_password(password, query):
-                    request.session["login"] = True
+                    request.session["lazylogin"] = username
                     messages.success(request, 'Successfully logged in')
                     return HttpResponseRedirect(reverse('index'))
             messages.error(request, 'Incorrect username/password')
@@ -45,6 +60,9 @@ def login(request):
     return render(request, 'login.html', context)
 
 def customerRegister(request):
+    # if logged in redirect to home
+    if request.session.get('lazylogin', None) != None:
+        return HttpResponseRedirect(reverse('index'))
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         form = CustomerForm(request.POST)
@@ -61,7 +79,23 @@ def customerRegister(request):
             zip_code = form.cleaned_data['zip_code']
             customer = [username, password, first_name, last_name, email, phone_number, street, city, state, zip_code]
             with connection.cursor() as cursor:
+                cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
+                data = cursor.fetchall()
+                if len(data) > 0:
+                    messages.error(request, "Username is already taken.")
+                    return HttpResponseRedirect(reverse('customer-register'))
+                cursor.execute("SELECT username FROM Supplier WHERE username = %s", [username])
+                data = cursor.fetchall()
+                if len(data) > 0:
+                    messages.error(request, "Username is already taken.")
+                    return HttpResponseRedirect(reverse('customer-register'))
+                cursor.execute("SELECT username FROM Customer WHERE email = %s", [email])
+                data = cursor.fetchall()
+                if len(data) > 0:
+                    messages.error(request, "Email is already taken.")
+                    return HttpResponseRedirect(reverse('customer-register'))
                 cursor.execute("INSERT INTO Customer(username, password, first_name, last_name, email, phone_number, street, city, state, zip_code) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", customer)
+            messages.success(request, 'Successfully registered!')
             return HttpResponseRedirect(reverse('login'))
         else:
             messages.error(request, 'Must fill out all fields')
@@ -70,6 +104,9 @@ def customerRegister(request):
     return render(request, 'customerRegister.html', context)
 
 def supplierRegister(request):
+    # if logged in redirect to home
+    if request.session.get('lazylogin', None) != None:
+        return HttpResponseRedirect(reverse('index'))
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -86,7 +123,22 @@ def supplierRegister(request):
             zip_code = form.cleaned_data['zip_code']
             supplier = [username, password, org_name, email, phone_number, website, street, city, state, zip_code]
             with connection.cursor() as cursor:
+                cursor.execute("SELECT username FROM Supplier WHERE username = %s", [username])
+                data = cursor.fetchall()
+                if len(data) > 0:
+                    messages.error(request, "Username is already taken.")
+                    return HttpResponseRedirect(reverse('supplier-register'))
+                cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
+                data = cursor.fetchall()
+                if len(data) > 0:
+                    messages.error(request, "Username is already taken.")
+                cursor.execute("SELECT username FROM Supplier WHERE email = %s", [email])
+                data = cursor.fetchall()
+                if len(data) > 0:
+                    messages.error(request, "Email is already taken.")
+                    return HttpResponseRedirect(reverse('supplier-register'))
                 cursor.execute("INSERT INTO Supplier(username, password, org_name, email, phone_number, website, street, city, state, zip_code) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", supplier)
+            messages.success(request, 'Successfully registered!')
             return HttpResponseRedirect(reverse('login'))
         else:
             messages.error(request, 'Must fill out all fields')
@@ -94,14 +146,12 @@ def supplierRegister(request):
     context = {'form': form}
     return render(request, 'supplierRegister.html', context)
 
+@login_required
 def index(request):
-    if not request.session["login"]:
-        messages.error(request, 'Must login to view')
-        return HttpResponseRedirect(reverse('login'))
     context = {}
     return render(request, 'index.html', context)
 
-
+@login_required
 def createReview(request):
     if request.method == 'POST':
         form = ReviewForm(request.POST)
@@ -118,6 +168,7 @@ def createReview(request):
     context = {'form':form}
     return render(request, 'createReview.html', context)
 
+@login_required
 def sellRecipe(request):
     if request.method == 'POST':
         form = RecipeForm(request.POST)

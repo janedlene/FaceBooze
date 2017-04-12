@@ -2,7 +2,7 @@
 
 {% block content %}
 
-<h1>Home page lol</h1>
+<h1>Welcome {{ request.session.lazylogin }}</h1>
 
 <a href="{% url 'create-review' %}">Write a Review</a>
 <a href="{% url 'sell-recipe' %}">Create a Recipe</a>
