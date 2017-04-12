@@ -134,6 +134,7 @@ def supplierRegister(request):
                 data = cursor.fetchall()
                 if len(data) > 0:
                     messages.error(request, "Username is already taken.")
+                    return HttpResponseRedirect(reverse('supplier-register'))
                 cursor.execute("SELECT username FROM Supplier WHERE email = %s", [email])
                 data = cursor.fetchall()
                 if len(data) > 0:
