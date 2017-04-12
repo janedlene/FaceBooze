@@ -63,6 +63,7 @@ def customerRegister(request):
     # if logged in redirect to home
     if request.session.get('lazylogin', None) != None:
         return HttpResponseRedirect(reverse('index'))
+    cursor = connection.cursor()
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         form = CustomerForm(request.POST)
@@ -108,6 +109,7 @@ def supplierRegister(request):
     if request.session.get('lazylogin', None) != None:
         return HttpResponseRedirect(reverse('index'))
     # if this is a POST request we need to process the form data
+    cursor = connection.cursor()
     if request.method == 'POST':
         form = SupplierForm(request.POST)
         if form.is_valid():
@@ -153,6 +155,7 @@ def index(request):
 
 @login_required
 def createReview(request):
+    cursor = connection.cursor()
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
@@ -170,6 +173,7 @@ def createReview(request):
 
 @login_required
 def sellRecipe(request):
+    cursor = connection.cursor()
     if request.method == 'POST':
         form = RecipeForm(request.POST)
         if form.is_valid():
