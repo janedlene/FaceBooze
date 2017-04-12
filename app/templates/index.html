@@ -7,4 +7,11 @@
 <a href="{% url 'create-review' %}">Write a Review</a>
 <a href="{% url 'sell-recipe' %}">Create a Recipe</a>
 
+<br>
+
+{% for item in query %}
+	{{ item }}
+	<br>
+{% endfor %}
+
 {% endblock %}

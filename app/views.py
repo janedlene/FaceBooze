@@ -161,7 +161,13 @@ def supplierRegister(request):
 
 @login_required
 def index(request):
-    context = {}
+    cursor = connection.cursor()
+    query = []
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM Recipe")
+        query = dictfetchall(cursor)
+    print query
+    context = {'query': query}
     return render(request, 'index.html', context)
 
 @login_required
@@ -207,6 +213,14 @@ def sellRecipe(request):
         form = RecipeForm()
     context = {'form': form}
     return render(request, 'sellRecipe.html', context)
+
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dict"
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]
 
 
 #### MYSQL QUERY EXAMPLE
