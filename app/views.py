@@ -69,6 +69,11 @@ def customerRegister(request):
         form = CustomerForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
+            pass1 = form.cleaned_data['password']
+            pass2 = form.cleaned_data['confirm_pass']
+            if pass1 != pass2:
+                messages.error(request, "Passwords do not match")
+                return HttpResponseRedirect(reverse('customer-register'))
             password = hashers.make_password(form.cleaned_data['password'])
             first_name = form.cleaned_data['first_name']
             last_name = form.cleaned_data['last_name']
@@ -114,6 +119,11 @@ def supplierRegister(request):
         form = SupplierForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
+            pass1 = form.cleaned_data['password']
+            pass2 = form.cleaned_data['confirm_pass']
+            if pass1 != pass2:
+                messages.error(request, "Passwords do not match")
+                return HttpResponseRedirect(reverse('supplier-register'))
             password = hashers.make_password(form.cleaned_data['password'])
             org_name = form.cleaned_data['org_name']
             email = form.cleaned_data['email']
