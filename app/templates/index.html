@@ -38,8 +38,10 @@
 			<td>{{ item.price }}</td>
 			<td>{{ item.cooking_time }}</td>
 			<td>{{ item.serving_size }}</td>
-			{% if isCustomer %}
+			{% if isCustomer and item.recipe_id not in custHistory %}
 				<td><a href="{% url 'buy-recipe' item.recipe_id %}" class="btn btn-primary">Buy</a></td>
+			{% else %}
+				<td><a href="" class="btn btn-danger">Purchased</a></td>
 			{% endif %}
 		</tr>
 	{% endfor %}
