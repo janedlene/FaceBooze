@@ -165,8 +165,8 @@ def index(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM Recipe")
         query = dictfetchall(cursor)
-    print query
-    context = {'query': query}
+    isCust = isCustomer(request.session.get('lazylogin', None))
+    context = {'isCustomer': isCust, 'query': query}
     return render(request, 'index.html', context)
 
 @login_required
@@ -213,6 +213,15 @@ def sellRecipe(request):
     context = {'form': form}
     return render(request, 'sellRecipe.html', context)
 
+
+def isCustomer(username):
+    cursor = connection.cursor()
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
+        data = cursor.fetchall()
+        if len(data) > 0:
+            return True
+    return False
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"

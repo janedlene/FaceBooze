@@ -2,17 +2,45 @@
 
 {% block content %}
 
-<h1>Welcome {{ request.session.lazylogin }}</h1>
+<div class="container" style="margin-top:50px; margin-bottom:50px;">
+	<div class="row">
+		<div class="col-md-6">
+			<h1>Welcome {{ request.session.lazylogin }}</h1>
+		</div>
+		<div class="col-md-6">
+			{% if isCustomer %}
+				<h1><a href="{% url 'create-review' %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
+			{% else %}
+				<h1><a href="{% url 'sell-recipe' %}" class="btn btn-default" style="float:right;">Create a Recipe</a></h1>
+			{% endif %}
+		</div>
+	</div>
 
-<a href="{% url 'create-review' %}">Write a Review</a>
-<a href="{% url 'sell-recipe' %}">Create a Recipe</a>
-
-<br>
-
-{% for item in query %}
-	{{ item }}
 	<br>
-{% endfor %}
+
+	<table class="table table-striped">
+	    <thead>
+	      <tr>
+	        <th>Title</th>
+	        <th>Price</th>
+	        <th>Cooking Time</th>
+	        <th>Serving Size</th>
+	      </tr>
+	    </thead>
+	    <tbody>
+
+	{% for item in query %}
+		<tr>
+			<td>{{ item.title }}</td>
+			<td>{{ item.price }}</td>
+			<td>{{ item.cooking_time }}</td>
+			<td>{{ item.serving_size }}</td>
+		</tr>
+	{% endfor %}
+		</tbody>
+	</table>
+</div>
+
 
 <a href="{% url 'customer-history' %}">My Order History</a>
 {% endblock %}
