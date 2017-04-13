@@ -4,6 +4,7 @@ from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth import hashers
+import datetime
 
 from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm
 
@@ -213,6 +214,21 @@ def sellRecipe(request):
         form = RecipeForm()
     context = {'form': form}
     return render(request, 'sellRecipe.html', context)
+
+def buyRecipe(request, id):
+    cursor = connection.cursor()
+    if not isCustomer(request.session.get('lazylogin', None)):
+        messages.error(request, 'Must be a customer to buy a recipe')
+        return HttpResponseRedirect(reverse('index'))
+    recipe_id = id
+    username = request.session.get('lazylogin', None)
+    date = datetime.datetime.now()
+    purchase = [username, recipe_id, date]
+    with connection.cursor() as cursor:
+        cursor.execute("INSERT INTO purchase(username, recipe_id, date) VALUES (%s, %s, %s)", purchase)
+    messages.success(request, 'Successfully purchased recipe!')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 def isCustomer(username):
     cursor = connection.cursor()

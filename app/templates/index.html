@@ -25,6 +25,9 @@
 	        <th>Price</th>
 	        <th>Cooking Time</th>
 	        <th>Serving Size</th>
+	        {% if isCustomer %}
+	        	<th></th>
+	        {% endif %}
 	      </tr>
 	    </thead>
 	    <tbody>
@@ -35,6 +38,9 @@
 			<td>{{ item.price }}</td>
 			<td>{{ item.cooking_time }}</td>
 			<td>{{ item.serving_size }}</td>
+			{% if isCustomer %}
+				<td><a href="{% url 'buy-recipe' item.recipe_id %}" class="btn btn-primary">Buy</a></td>
+			{% endif %}
 		</tr>
 	{% endfor %}
 		</tbody>
