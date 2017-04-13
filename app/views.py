@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth import hashers
 
-from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm
+from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
 
 def login_required(f):
     def wrap(request, *args, **kwargs):
@@ -27,7 +27,6 @@ def logout(request):
     else:
         messages.error(request, 'Cannot logout if you are not logged in')
     return HttpResponseRedirect(reverse('login'))
-    
 
 def login(request):
     # if logged in redirect to home
@@ -214,6 +213,7 @@ def sellRecipe(request):
     context = {'form': form}
     return render(request, 'sellRecipe.html', context)
 
+
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]
@@ -221,6 +221,20 @@ def dictfetchall(cursor):
         dict(zip(columns, row))
         for row in cursor.fetchall()
     ]
+
+def customerHistory(request):
+    cursor = connection.cursor()
+    query = []
+    
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        query = cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
+        print request.session.get('lazylogin', None)
+        query = dictfetchall(cursor)
+        #print query 
+    print query
+    context = {'query' : query}
+    return render(request, 'customerHistory.html', context)
 
 
 #### MYSQL QUERY EXAMPLE

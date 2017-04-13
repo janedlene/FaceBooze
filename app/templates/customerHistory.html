@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Your Order History</h2>
+
+<table class = "table table-striped">
+<thead>
+  <tr>
+    <th>Recipe Title</th>
+    <th>Price</th> 
+    <th>Date of Purchase</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for recipe in query %}
+  <tr>
+    <td> {{ recipe.title }}</td>
+    <td> {{ recipe.price }}</td>
+    <td> {{ recipe.date }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+
+{% endblock %}
