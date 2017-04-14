@@ -163,11 +163,17 @@ def supplierRegister(request):
 def index(request):
     cursor = connection.cursor()
     query = []
+    customerPurchases = []
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM Recipe")
         query = dictfetchall(cursor)
+        cursor.execute("SELECT recipe_id FROM purchase WHERE username = %s", [request.session.get('lazylogin', None)])
+        customerPurchases = cursor.fetchall()
     isCust = isCustomer(request.session.get('lazylogin', None))
-    context = {'isCustomer': isCust, 'query': query}
+    history = []
+    for purchase in customerPurchases:
+        history.append(purchase[0])
+    context = {'isCustomer': isCust, 'query': query, 'custHistory': history}
     return render(request, 'index.html', context)
 
 @login_required
@@ -225,6 +231,10 @@ def buyRecipe(request, id):
     date = datetime.datetime.now()
     purchase = [username, recipe_id, date]
     with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM purchase WHERE username = %s AND recipe_id = %s", [username, recipe_id])
+        if len(cursor.fetchall()) > 0:
+            messages.error(request, "Cannot buy recipe already purchased")
+            return HttpResponseRedirect(reverse('index'))
         cursor.execute("INSERT INTO purchase(username, recipe_id, date) VALUES (%s, %s, %s)", purchase)
     messages.success(request, 'Successfully purchased recipe!')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
