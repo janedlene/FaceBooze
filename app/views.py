@@ -4,6 +4,7 @@ from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth import hashers
+import datetime
 
 from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
 
@@ -214,6 +215,21 @@ def sellRecipe(request):
     return render(request, 'sellRecipe.html', context)
 
 
+def buyRecipe(request, id):
+    cursor = connection.cursor()
+    if not isCustomer(request.session.get('lazylogin', None)):
+        messages.error(request, 'Must be a customer to buy a recipe')
+        return HttpResponseRedirect(reverse('index'))
+    recipe_id = id
+    username = request.session.get('lazylogin', None)
+    date = datetime.datetime.now()
+    purchase = [username, recipe_id, date]
+    with connection.cursor() as cursor:
+        cursor.execute("INSERT INTO purchase(username, recipe_id, date) VALUES (%s, %s, %s)", purchase)
+    messages.success(request, 'Successfully purchased recipe!')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
 def isCustomer(username):
     cursor = connection.cursor()
     with connection.cursor() as cursor:
@@ -244,6 +260,20 @@ def customerHistory(request):
     print query
     context = {'query' : query}
     return render(request, 'customerHistory.html', context)
+
+def recipeDetails(request, id):
+    cursor = connection.cursor()
+    query = []
+
+    recipe_id = id
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        query = dictfetchall(cursor)
+    context = {'query' : query}
+    return render(request, 'recipeDetails.html', context)
+
+
 
 
 #### MYSQL QUERY EXAMPLE

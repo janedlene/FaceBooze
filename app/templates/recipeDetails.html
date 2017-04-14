@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container" style="margin-top:50px; margin-bottom:50px;">
+
+
+{% for recipe in query %}
+	
+	<h2> {{ recipe.title }}</h2>
+
+	<h4>Directions: {{recipe.directions}}</h4>
+
+	<h5>Serving Size: {{recipe.serving_size}}</h5>
+	<h5>Cuisine Type: {{ recipe.cuisine_type}}</h5>
+	<h5>Price: $ {{recipe.price}}</h5>
+{% endfor %}
+
+</div>
+
+
+{% endblock %}
