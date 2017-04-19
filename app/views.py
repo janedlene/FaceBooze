@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -283,7 +283,23 @@ def recipeDetails(request, id):
     context = {'query' : query}
     return render(request, 'recipeDetails.html', context)
 
-
+def ajax_search_recipe(request):
+    cursor = connection.cursor()
+    query = []
+    if request.is_ajax():
+        q = "'%" + request.GET.get('q') + "%'"
+        if q is not None:            
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM  Recipe WHERE title LIKE " + q + " OR serving_size LIKE " + q)
+                query = dictfetchall(cursor)
+                cursor.execute("SELECT recipe_id FROM purchase WHERE username = %s", [request.session.get('lazylogin', None)])
+                customerPurchases = cursor.fetchall()
+    isCust = isCustomer(request.session.get('lazylogin', None))
+    history = []
+    for purchase in customerPurchases:
+        history.append(purchase[0])
+    context = {'query': query, 'isCustomer' : isCust, 'custHistory': history} 
+    return render(request, '_recipes.html', context)
 
 
 #### MYSQL QUERY EXAMPLE
