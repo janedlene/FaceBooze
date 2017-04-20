@@ -181,7 +181,9 @@ def createReview(request):
     cursor = connection.cursor()
     if request.method == 'POST':
         form = ReviewForm(request.POST)
+        print form.errors
         if form.is_valid():
+            print "forms valid"
             title = form.cleaned_data['title']
             body = form.cleaned_data['body']
             rating = form.cleaned_data['rating']
@@ -249,6 +251,20 @@ def isCustomer(username):
             return True
     return False
 
+
+#### FIX THIS ######
+def didPurchase(username, recipe_id):
+    cursor = connection.cursor()
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        recipe_id = recipe_id
+        check = [[sess_user], recipe_id]
+        cursor.execute("SELECT Recipe.title FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s AND Recipe.id = %s", check)
+        data = cursor.fetchall()
+        if len(data) > 0:
+            return True
+    return False
+
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]
@@ -280,9 +296,38 @@ def recipeDetails(request, id):
         sess_user = request.session.get('lazylogin', None)
         query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
         query = dictfetchall(cursor)
-    context = {'query' : query}
+    isCust = isCustomer(request.session.get('lazylogin', None))
+    context = {'isCustomer': isCust, 'query': query}
     return render(request, 'recipeDetails.html', context)
 
+
+### FIX THISS TOOO ###
+def cancelOrder(request, id):
+    cursor = connection.cursor()
+    query = []
+    select = []
+    recipe_id = id
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        check = [recipe_id, sess_user]
+        query = cursor.execute("DELETE * FROM purchase NATURAL JOIN Recipe NATURAL JOIN Customer WHERE purchase.recipe_id = %s AND Customer.username = %s", check)
+        select = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        if query:
+                messages.success(request, 'Successfully created new recipe called ' + title)
+    context = {'select': select}
+    return render(request, 'recipeDetails.html', context)
+
+
+### AND THISSSS ###
+def showReviews(request, id):
+    cursor = connection.cursor()
+    reviews = []
+    recipe_id = id
+    with connection.cursor() as cursor:
+        reviews = cursor.execute("SELECT * FROM Review NATURAL JOIN Recipe NATURAL JOIN has WHERE has.recipe_id = %s", [recipe_id])
+        reviews = dictfetchall(cursor)
+    context = {'reviews' : reviews}
+    return render(request, 'recipeDetails.html', context)
 
 
 

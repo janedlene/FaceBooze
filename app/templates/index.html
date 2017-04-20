@@ -9,13 +9,12 @@
 		</div>
 		<div class="col-md-6">
 			{% if isCustomer %}
-				<h1><a href="{% url 'create-review' %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
+				
 			{% else %}
 				<h1><a href="{% url 'sell-recipe' %}" class="btn btn-default" style="float:right;">Create a Recipe</a></h1>
 			{% endif %}
 		</div>
 	</div>
-
 	<br>
 
 	<table class="table table-striped">
@@ -49,6 +48,6 @@
 	</table>
 </div>
 
-
 <a href="{% url 'customer-history' %}">My Order History</a>
+
 {% endblock %}

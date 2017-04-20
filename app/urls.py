@@ -14,4 +14,5 @@ urlpatterns = [
     url(r'^recipe/sell/$', views.sellRecipe, name='sell-recipe'),
 	url(r'^recipe/buy/(?P<id>[0-9]+)/$', views.buyRecipe, name='buy-recipe'),
 	url(r'^recipe/details/(?P<id>[0-9]+)/$', views.recipeDetails, name='recipe-details'),
+	url(r'^recipe/cancel/(?P<id>[0-9]+)/$', views.cancelOrder, name='cancel-order'),
 ]
