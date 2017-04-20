@@ -231,6 +231,12 @@ def buyRecipe(request, id):
     date = datetime.datetime.now()
     purchase = [username, recipe_id, date]
     with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        query = dictfetchall(cursor)
+        # print query
+        if not query[0]['available'] == '0':
+            messages.error(request, "Cannot buy an unavailable recipe")
+            return HttpResponseRedirect(reverse('index'))
         cursor.execute("SELECT * FROM purchase WHERE username = %s AND recipe_id = %s", [username, recipe_id])
         if len(cursor.fetchall()) > 0:
             messages.error(request, "Cannot buy recipe already purchased")
@@ -274,13 +280,17 @@ def customerHistory(request):
 def recipeDetails(request, id):
     cursor = connection.cursor()
     query = []
-
     recipe_id = id
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
-        query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
         query = dictfetchall(cursor)
-    context = {'query' : query}
+        cursor.execute("SELECT * FROM sell WHERE username = %s", [request.session.get('lazylogin', None)])
+        supplierRecipes = dictfetchall(cursor)
+    supplierRecipeIDs = []
+    for recipe in supplierRecipes:
+        supplierRecipeIDs.append(recipe['recipe_id'])
+    context = {'query' : query, 'supplierRecipes': supplierRecipeIDs}
     return render(request, 'recipeDetails.html', context)
 
 def ajax_search_recipe(request):
@@ -301,6 +311,19 @@ def ajax_search_recipe(request):
     context = {'query': query, 'isCustomer' : isCust, 'custHistory': history} 
     return render(request, '_recipes.html', context)
 
+def ajax_available_recipe(request):
+    cursor = connection.cursor()
+    if request.is_ajax():
+        q = request.GET.get('q')
+        cursor.execute("UPDATE Recipe SET available = 1 WHERE recipe_id = %s", [q])
+    return HttpResponse(q)
+
+def ajax_unavailable_recipe(request):
+    cursor = connection.cursor()
+    if request.is_ajax():
+        q = request.GET.get('q')
+        cursor.execute("UPDATE Recipe SET available = 0 WHERE recipe_id = %s", [q])
+    return HttpResponse(q)
 
 #### MYSQL QUERY EXAMPLE
 # def my_custom_sql(self):
