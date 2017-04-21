@@ -19,6 +19,9 @@
     <td> {{ recipe.price }}</td>
     <td> {{ recipe.date }}</td>
   </tr>
+
+<a href="{% url 'cancel-order' recipe.recipe_id %}" class="btn btn-primary">Cancel Order</a>
+
   {% endfor %}
   </tbody>
 </table>

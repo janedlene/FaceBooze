@@ -31,6 +31,7 @@
 	<h5>Serving Size: {{recipe.serving_size}}</h5>
 	<h5>Cuisine Type: {{ recipe.cuisine_type}}</h5>
 	<h5>Price: $ {{recipe.price}}</h5>
+
 	<br>
 	{% if recipe.recipe_id in supplierRecipes %}
 		{% if recipe.available %}
@@ -39,8 +40,19 @@
 			<button name="availability" class="btn btn-primary">Make Available</button>
 		{% endif %}
 	{% endif %}
-
+	
+	{% if isCustomer%}
+	<h1><a href="{% url 'create-review' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
+	{% endif %}
 {% endfor %}
+
+{% for review in reviews %}
+		{{ review }}
+{% endfor %}
+
+
+
+
 
 
 </div>
