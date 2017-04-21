@@ -191,8 +191,12 @@ def createReview(request, id):
             review = [title, body, rating]
 
             with connection.cursor() as cursor:
+                sess_user = request.session.get('lazylogin', None)
+
                 cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
-                cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [cursor.lastrowid, recipe_id])
+                review_id = cursor.lastrowid
+                cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
+                cursor.execute("INSERT INTO wrote(username, review_id) VALUES (%s, %s)", [sess_user, review_id])
             return HttpResponseRedirect(reverse('index'))
     else:
         form = ReviewForm()
@@ -299,6 +303,7 @@ def customerHistory(request):
 def recipeDetails(request, id):
     cursor = connection.cursor()
     query = []
+    reviews = []
     recipe_id = id
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
@@ -306,11 +311,16 @@ def recipeDetails(request, id):
         query = dictfetchall(cursor)
         cursor.execute("SELECT * FROM sell WHERE username = %s", [request.session.get('lazylogin', None)])
         supplierRecipes = dictfetchall(cursor)
+        cursor.execute("SELECT * FROM Review NATURAL JOIN has WHERE has.recipe_id = %s", [recipe_id])
+        reviews = dictfetchall(cursor)
+
+        ## how to get each review_id ??
+        ##cursor.execute("SELECT has.username FROM has WHERE has.review_id = %s", [review_id])
     isCust = isCustomer(request.session.get('lazylogin', None))
     supplierRecipeIDs = []
     for recipe in supplierRecipes:
         supplierRecipeIDs.append(recipe['recipe_id'])
-    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs}
+    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews}
     return render(request, 'recipeDetails.html', context)
 
 def ajax_search_recipe(request):
@@ -346,16 +356,7 @@ def cancelOrder(request, id):
     return render(request, 'recipeDetails.html', context)
 
 
-### AND THISSSS ###
-def showReviews(request, id):
-    cursor = connection.cursor()
-    reviews = []
-    with connection.cursor() as cursor:
-        recipe_id = id
-        reviews = cursor.execute("SELECT * FROM Review NATURAL JOIN has WHERE has.recipe_id = %s", [recipe_id])
-        reviews = dictfetchall(cursor)
-    context = {'reviews' : reviews}
-    return render(request, 'recipeDetails.html', context)
+
 
 def ajax_available_recipe(request):
     cursor = connection.cursor()

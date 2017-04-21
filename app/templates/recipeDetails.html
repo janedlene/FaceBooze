@@ -7,6 +7,8 @@
 
 {% for recipe in query %}
 
+
+
 	<p id="recipe-id" style="display:none;">{{recipe.recipe_id}}</p>
 
 	<div class="row">
@@ -22,6 +24,9 @@
 			{% endif %}
 			</h2>
 		</div>
+		{% if isCustomer%}
+			<h1><a href="{% url 'create-review' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
+		{% endif %}
 	</div>
 
 	<hr>
@@ -41,19 +46,31 @@
 		{% endif %}
 	{% endif %}
 	
-	{% if isCustomer%}
-	<h1><a href="{% url 'create-review' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
-	{% endif %}
+	
+
+
 {% endfor %}
 
-{% for review in reviews %}
-		{{ review }}
+<h3>Reviews</h3>
+<table class="table table-striped" id="recipe-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Body</th>
+        <th>Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+		{% for review in reviews %}
+	<tr>
+		<td>{{ review.title }}</td>
+		<td>{{ review.body }}</td>
+		<td>{{review.rating}}</td>
+	</tr>
+		
 {% endfor %}
-
-
-
-
-
+	</tbody>
+</table>
 
 </div>
 
