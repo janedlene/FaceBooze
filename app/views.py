@@ -242,8 +242,8 @@ def buyRecipe(request, id):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
         query = dictfetchall(cursor)
-        # print query
-        if not query[0]['available'] == '0':
+        # print query[0]['available']
+        if query[0]['available'] == False:
             messages.error(request, "Cannot buy an unavailable recipe")
             return HttpResponseRedirect(reverse('index'))
         cursor.execute("SELECT * FROM purchase WHERE username = %s AND recipe_id = %s", [username, recipe_id])
