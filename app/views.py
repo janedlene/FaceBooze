@@ -198,7 +198,7 @@ def createReview(request):
 def sellRecipe(request):
     cursor = connection.cursor()
     if request.method == 'POST':
-        form = RecipeForm(request.POST)
+        form = RecipeForm(request.POST, extra=request.POST.get('ingredient_count'))
         if form.is_valid():
             title = form.cleaned_data['title']
             directions = form.cleaned_data['directions']
@@ -207,10 +207,26 @@ def sellRecipe(request):
             cuisine_type = form.cleaned_data['cuisine_type']
             price = form.cleaned_data['price']
             recipe = [title, directions, serving_size, cooking_time, cuisine_type, price]
+
+            ingredient_count = form.cleaned_data['ingredient_count']
+            username = request.session.get('lazylogin', None)
+            
+
             with connection.cursor() as cursor:
                 query = cursor.execute("INSERT INTO Recipe(title, directions, serving_size, cooking_time, cuisine_type, price) VALUES (%s, %s, %s, %s, %s, %s)", recipe)
-            if query:
+                #insert ingredients into ingredients table and into many to many table
+                rid = cursor.lastrowid
+                selling = [rid, username]
+                query2 = cursor.execute("INSERT INTO sell(recipe_id, username) VALUES (%s, %s)", selling)
+                for x in range (int(ingredient_count)):
+                    ingred = form.cleaned_data['ingredient_' + str(x)]
+                    #check if ingredient is in ingredient list, if it isn't, add it
+                    query3 = cursor.execute("""INSERT INTO Ingredient(name) VALUES (%s) ON DUPLICATE KEY UPDATE name = %s """, (ingred, ingred))
+                    ingredient = [ingred, rid]
+                    query4 = cursor.execute("INSERT INTO contains(name, recipe_id) VALUES (%s, %s)", ingredient)
+            if query and query2 and query3 and query4:
                 messages.success(request, 'Successfully created new recipe called ' + title)
+                form = RecipeForm()
                 #return HttpResponseRedirect(reverse('sellRecipe'))
             else:
                 messages.error(request, 'Could not create new recipe')

@@ -42,6 +42,20 @@ class RecipeForm(forms.Form):
 	cooking_time = forms.DecimalField(label="Cooking Time", max_digits=3)
 	cuisine_type = forms.CharField(label="Cuisine Type", max_length=20)
 	price = forms.DecimalField(label="Price", max_digits=3, decimal_places=2)
+	ingredient_count = forms.CharField(label="Ingredient Count", widget = forms.HiddenInput())
+
+	def __init__(self, *args, **kwargs):
+		extra_fields = kwargs.pop('extra', 0)
+
+		# check if extra_fields exist. if they don't exist assign 0 to them
+		if not extra_fields:
+				extra_fields = 0;
+		super(RecipeForm, self).__init__(*args, **kwargs)
+		self.fields['ingredient_count'].initial = extra_fields
+
+		for index in range(int(extra_fields)):
+			# generate extra fields in the number specified via extra_fields
+			self.fields['ingredient_{index}'.format(index=index)] = forms.CharField()
 
 class OrderHistoryForm(forms.Form):
 	title = forms.CharField(label = 'Title', max_length=50)
