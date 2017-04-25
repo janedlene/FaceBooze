@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load staticfiles %}
+
 {% block content %}
 
 <div class="container" style="margin-top:50px; margin-bottom:50px;">
@@ -9,46 +11,41 @@
 		</div>
 		<div class="col-md-6">
 			{% if isCustomer %}
-				<h1><a href="{% url 'create-review' %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
+				
 			{% else %}
 				<h1><a href="{% url 'sell-recipe' %}" class="btn btn-default" style="float:right;">Create a Recipe</a></h1>
 			{% endif %}
 		</div>
 	</div>
+	<br>
+
+	<div>
+		<input id=”q” class="form-control" name="search" placeholder="Search for recipe..." type=”text”/>
+	</div>
 
 	<br>
 
-	<table class="table table-striped">
-	    <thead>
-	      <tr>
-	        <th>Title</th>
-	        <th>Price</th>
-	        <th>Cooking Time</th>
-	        <th>Serving Size</th>
-	        {% if isCustomer %}
-	        	<th></th>
-	        {% endif %}
-	      </tr>
-	    </thead>
-	    <tbody>
-
-	{% for item in query %}
-		<tr>
-			<td><a href="{% url 'recipe-details' item.recipe_id %}">{{ item.title }}</a></td>
-			<td>{{ item.price }}</td>
-			<td>{{ item.cooking_time }}</td>
-			<td>{{ item.serving_size }}</td>
-			{% if isCustomer and item.recipe_id not in custHistory %}
-				<td><a href="{% url 'buy-recipe' item.recipe_id %}" class="btn btn-primary">Buy</a></td>
-			{% else %}
-				<td><a href="" class="btn btn-danger">Purchased</a></td>
-			{% endif %}
-		</tr>
-	{% endfor %}
-		</tbody>
-	</table>
+	{% include '_recipes.html' %}
 </div>
 
-
 <a href="{% url 'customer-history' %}">My Order History</a>
+
+<script>
+	$( document ).ready(function() {
+		console.log("Document is ready");
+		$('input[name=search]').on('input',function(e){ 
+			$.ajax({
+		        url: '/ajax/search/recipe',
+		        data: {
+		          'q': $(this).val()
+		        },
+		        success: function (data) {
+		        	$( "#recipe-table" ).replaceWith( data );
+		        }
+		    }); 
+
+		});
+	});
+</script>
+
 {% endblock %}

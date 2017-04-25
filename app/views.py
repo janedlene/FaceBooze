@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -177,17 +177,22 @@ def index(request):
     return render(request, 'index.html', context)
 
 @login_required
-def createReview(request):
+def createReview(request, id):
     cursor = connection.cursor()
     if request.method == 'POST':
         form = ReviewForm(request.POST)
+        print form.errors
+        recipe_id = id
         if form.is_valid():
+            print "forms valid"
             title = form.cleaned_data['title']
             body = form.cleaned_data['body']
             rating = form.cleaned_data['rating']
             review = [title, body, rating]
+
             with connection.cursor() as cursor:
                 cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
+                cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [cursor.lastrowid, recipe_id])
             return HttpResponseRedirect(reverse('index'))
     else:
         form = ReviewForm()
@@ -247,6 +252,12 @@ def buyRecipe(request, id):
     date = datetime.datetime.now()
     purchase = [username, recipe_id, date]
     with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        query = dictfetchall(cursor)
+        # print query[0]['available']
+        if query[0]['available'] == False:
+            messages.error(request, "Cannot buy an unavailable recipe")
+            return HttpResponseRedirect(reverse('index'))
         cursor.execute("SELECT * FROM purchase WHERE username = %s AND recipe_id = %s", [username, recipe_id])
         if len(cursor.fetchall()) > 0:
             messages.error(request, "Cannot buy recipe already purchased")
@@ -260,6 +271,20 @@ def isCustomer(username):
     cursor = connection.cursor()
     with connection.cursor() as cursor:
         cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
+        data = cursor.fetchall()
+        if len(data) > 0:
+            return True
+    return False
+
+
+#### FIX THIS ######
+def didPurchase(username, id):
+    cursor = connection.cursor()
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        recipe_id = id
+        check = [[sess_user], recipe_id]
+        cursor.execute("SELECT Recipe.title FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s AND Recipe.id = %s", check)
         data = cursor.fetchall()
         if len(data) > 0:
             return True
@@ -290,17 +315,77 @@ def customerHistory(request):
 def recipeDetails(request, id):
     cursor = connection.cursor()
     query = []
-
     recipe_id = id
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
-        query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
         query = dictfetchall(cursor)
-    context = {'query' : query}
+        cursor.execute("SELECT * FROM sell WHERE username = %s", [request.session.get('lazylogin', None)])
+        supplierRecipes = dictfetchall(cursor)
+    isCust = isCustomer(request.session.get('lazylogin', None))
+    supplierRecipeIDs = []
+    for recipe in supplierRecipes:
+        supplierRecipeIDs.append(recipe['recipe_id'])
+    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs}
+    return render(request, 'recipeDetails.html', context)
+
+def ajax_search_recipe(request):
+    cursor = connection.cursor()
+    query = []
+    if request.is_ajax():
+        q = "'%" + request.GET.get('q') + "%'"
+        if q is not None:            
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM  Recipe WHERE title LIKE " + q + " OR serving_size LIKE " + q)
+                query = dictfetchall(cursor)
+                cursor.execute("SELECT recipe_id FROM purchase WHERE username = %s", [request.session.get('lazylogin', None)])
+                customerPurchases = cursor.fetchall()
+    isCust = isCustomer(request.session.get('lazylogin', None))
+    history = []
+    for purchase in customerPurchases:
+        history.append(purchase[0])
+    context = {'query': query, 'isCustomer' : isCust, 'custHistory': history} 
+    return render(request, '_recipes.html', context)
+
+### FIX THISS TOOO ###
+def cancelOrder(request, id):
+    cursor = connection.cursor()
+    query = []
+    with connection.cursor() as cursor:
+        recipe_id = id
+        sess_user = request.session.get('lazylogin', None)
+        check = [recipe_id, sess_user]
+        query = cursor.execute("DELETE * FROM purchase NATURAL JOIN Recipe NATURAL JOIN Customer WHERE purchase.recipe_id = %s AND Customer.username = %s", check)
+        if query:
+            messages.success(request, 'Successfully cancelled order')
+    context = {'query': query}
     return render(request, 'recipeDetails.html', context)
 
 
+### AND THISSSS ###
+def showReviews(request, id):
+    cursor = connection.cursor()
+    reviews = []
+    with connection.cursor() as cursor:
+        recipe_id = id
+        reviews = cursor.execute("SELECT * FROM Review NATURAL JOIN has WHERE has.recipe_id = %s", [recipe_id])
+        reviews = dictfetchall(cursor)
+    context = {'reviews' : reviews}
+    return render(request, 'recipeDetails.html', context)
 
+def ajax_available_recipe(request):
+    cursor = connection.cursor()
+    if request.is_ajax():
+        q = request.GET.get('q')
+        cursor.execute("UPDATE Recipe SET available = 1 WHERE recipe_id = %s", [q])
+    return HttpResponse(q)
+
+def ajax_unavailable_recipe(request):
+    cursor = connection.cursor()
+    if request.is_ajax():
+        q = request.GET.get('q')
+        cursor.execute("UPDATE Recipe SET available = 0 WHERE recipe_id = %s", [q])
+    return HttpResponse(q)
 
 #### MYSQL QUERY EXAMPLE
 # def my_custom_sql(self):

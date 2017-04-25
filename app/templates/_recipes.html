@@ -1,0 +1,28 @@
+<table class="table table-striped" id="recipe-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Price</th>
+        <th>Cooking Time</th>
+        <th>Serving Size</th>
+        {% if isCustomer %}
+        	<th></th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+		{% for item in query %}
+			<tr>
+				<td><a href="{% url 'recipe-details' item.recipe_id %}">{{ item.title }}</a></td>
+				<td>{{ item.price }}</td>
+				<td>{{ item.cooking_time }}</td>
+				<td>{{ item.serving_size }}</td>
+				{% if isCustomer and item.recipe_id not in custHistory %}
+					<td><a href="{% url 'buy-recipe' item.recipe_id %}" class="btn btn-primary">Buy</a></td>
+				{% elif isCustomer %}
+					<td><a href="" class="btn btn-danger">Purchased</a></td>
+				{% endif %}
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
