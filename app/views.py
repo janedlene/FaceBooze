@@ -232,10 +232,8 @@ def sellRecipe(request):
             if query and query2 and query3 and query4:
                 messages.success(request, 'Successfully created new recipe called ' + title)
                 form = RecipeForm()
-                #return HttpResponseRedirect(reverse('sellRecipe'))
             else:
                 messages.error(request, 'Could not create new recipe')
-            #return HttpResponseRedirect(reverse('sellRecipe'))
     else:
         form = RecipeForm()
     context = {'form': form}
