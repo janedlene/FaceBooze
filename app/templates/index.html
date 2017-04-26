@@ -11,13 +11,14 @@
 		</div>
 		<div class="col-md-6">
 			{% if isCustomer %}
+			
 				<h1><a href="{% url 'view-profile' %}" class="btn btn-default" style="float:right;"> View Profile</a></h1>
+
 			{% else %}
 				<h1><a href="{% url 'view-supplier-profile' %}" class="btn btn-default" style="float:right;">View Profile</a></h1>
 			{% endif %}
 		</div>
 	</div>
-
 	<br>
 
 	<div>
@@ -28,7 +29,6 @@
 
 	{% include '_recipes.html' %}
 </div>
-
 
 <script>
 	$( document ).ready(function() {

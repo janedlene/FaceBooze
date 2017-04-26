@@ -6,17 +6,111 @@
 
 
 {% for recipe in query %}
-	
-	<h2> {{ recipe.title }}</h2>
+
+
+
+	<p id="recipe-id" style="display:none;">{{recipe.recipe_id}}</p>
+
+	<div class="row">
+		<div class="col-md-6">
+			<h2>{{ recipe.title }}</h2>
+		</div>
+		<div class="col-md-6">
+			<h2 style="float:right" id="availablityLabel">
+			{% if recipe.available %}
+				<button class="btn btn-success">AVAILABLE</button>
+			{% else %}
+				<button class="btn btn-danger">UNAVAILABLE</button>
+			{% endif %}
+			</h2>
+		</div>
+		{% if isCustomer%}
+			<h1><a href="{% url 'create-review' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
+		{% endif %}
+	</div>
+
+	<hr>
 
 	<h4>Directions: {{recipe.directions}}</h4>
 
 	<h5>Serving Size: {{recipe.serving_size}}</h5>
 	<h5>Cuisine Type: {{ recipe.cuisine_type}}</h5>
 	<h5>Price: $ {{recipe.price}}</h5>
+
+	<br>
+	{% if recipe.recipe_id in supplierRecipes %}
+		{% if recipe.available %}
+			<button name="availability" class="btn btn-primary">Make Unavailable</button>
+		{% else %}
+			<button name="availability" class="btn btn-primary">Make Available</button>
+		{% endif %}
+	{% endif %}
+	
+
+
+
 {% endfor %}
+
+<h3>Reviews</h3>
+<table class="table table-striped" id="recipe-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Body</th>
+        <th>Rating</th>
+        <th>User</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+		{% for review in reviews %}
+			<tr>
+				<td>{{ review.title }}</td>
+				<td>{{ review.body }}</td>
+				<td>{{review.rating}}</td>
+				<td>{{ review.username }}</td>
+				<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
+			</tr>
+		
+		{% endfor %}
+	</tbody>
+</table>
 
 </div>
 
+<script>
+	$( document ).ready(function() {
+		console.log("Document is ready");
+		$('button[name=availability]').on('click',function(e){
+			console.log("clicked!");
+			if($('button[name=availability]').text() == 'Make Available') {
+				$.ajax({
+			        url: '/ajax/available/recipe',
+			        data: {
+			          'q': $('#recipe-id').text()
+			        },
+			        success: function (data) {
+			        	console.log("Success!");
+			        	$('button[name=availability]').html('Make Unavailable');
+			        	$('#availablityLabel').html('<button class="btn btn-success">AVAILABLE</button>');
+			        }
+			    }); 
+			}
+			else {
+				$.ajax({
+			        url: '/ajax/unavailable/recipe',
+			        data: {
+			          'q': $('#recipe-id').text()
+			        },
+			        success: function (data) {
+			        	console.log("Success!");
+			        	$('button[name=availability]').html('Make Available');
+			        	$('#availablityLabel').html('<button class="btn btn-danger">UNAVAILABLE</button>');
+			        }
+			    });
+			}
+		});
+	});
+</script>
 
 {% endblock %}

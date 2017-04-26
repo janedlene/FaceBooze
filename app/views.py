@@ -39,6 +39,8 @@ def login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            print username
+            print password
             user = [username]
             if request.POST.get('submit', None) == 'Customer Login':
                 cursor.execute("SELECT password FROM Customer WHERE username = %s", user)
@@ -47,6 +49,7 @@ def login(request):
             query = cursor.fetchone()
             if query:
                 query = query[0]
+                print query
                 if hashers.check_password(password, query):
                     request.session["lazylogin"] = username
                     messages.success(request, 'Successfully logged in')
@@ -178,17 +181,26 @@ def index(request):
 
 """
 @login_required
-def createReview(request):
+def createReview(request, id):
     cursor = connection.cursor()
     if request.method == 'POST':
         form = ReviewForm(request.POST)
+        print form.errors
+        recipe_id = id
         if form.is_valid():
+            print "forms valid"
             title = form.cleaned_data['title']
             body = form.cleaned_data['body']
             rating = form.cleaned_data['rating']
             review = [title, body, rating]
+
             with connection.cursor() as cursor:
+                sess_user = request.session.get('lazylogin', None)
+
                 cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
+                review_id = cursor.lastrowid
+                cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
+                cursor.execute("INSERT INTO wrote(username, review_id) VALUES (%s, %s)", [sess_user, review_id])
             return HttpResponseRedirect(reverse('index'))
     else:
         form = ReviewForm()
@@ -200,7 +212,7 @@ def createReview(request):
 def sellRecipe(request):
     cursor = connection.cursor()
     if request.method == 'POST':
-        form = RecipeForm(request.POST)
+        form = RecipeForm(request.POST, extra=request.POST.get('ingredient_count'))
         if form.is_valid():
             title = form.cleaned_data['title']
             directions = form.cleaned_data['directions']
@@ -209,14 +221,28 @@ def sellRecipe(request):
             cuisine_type = form.cleaned_data['cuisine_type']
             price = form.cleaned_data['price']
             recipe = [title, directions, serving_size, cooking_time, cuisine_type, price]
+
+            ingredient_count = form.cleaned_data['ingredient_count']
+            username = request.session.get('lazylogin', None)
+            
+
             with connection.cursor() as cursor:
                 query = cursor.execute("INSERT INTO Recipe(title, directions, serving_size, cooking_time, cuisine_type, price) VALUES (%s, %s, %s, %s, %s, %s)", recipe)
-            if query:
+                #insert ingredients into ingredients table and into many to many table
+                rid = cursor.lastrowid
+                selling = [rid, username]
+                query2 = cursor.execute("INSERT INTO sell(recipe_id, username) VALUES (%s, %s)", selling)
+                for x in range (int(ingredient_count)):
+                    ingred = form.cleaned_data['ingredient_' + str(x)]
+                    #check if ingredient is in ingredient list, if it isn't, add it
+                    query3 = cursor.execute("""INSERT INTO Ingredient(name) VALUES (%s) ON DUPLICATE KEY UPDATE name = %s """, (ingred, ingred))
+                    ingredient = [ingred, rid]
+                    query4 = cursor.execute("INSERT INTO contains(name, recipe_id) VALUES (%s, %s)", ingredient)
+            if query and query2 and query3 and query4:
                 messages.success(request, 'Successfully created new recipe called ' + title)
-                #return HttpResponseRedirect(reverse('sellRecipe'))
+                form = RecipeForm()
             else:
                 messages.error(request, 'Could not create new recipe')
-            #return HttpResponseRedirect(reverse('sellRecipe'))
     else:
         form = RecipeForm()
     context = {'form': form}
@@ -233,6 +259,12 @@ def buyRecipe(request, id):
     date = datetime.datetime.now()
     purchase = [username, recipe_id, date]
     with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        query = dictfetchall(cursor)
+        # print query[0]['available']
+        if query[0]['available'] == False:
+            messages.error(request, "Cannot buy an unavailable recipe")
+            return HttpResponseRedirect(reverse('index'))
         cursor.execute("SELECT * FROM purchase WHERE username = %s AND recipe_id = %s", [username, recipe_id])
         if len(cursor.fetchall()) > 0:
             messages.error(request, "Cannot buy recipe already purchased")
@@ -246,6 +278,20 @@ def isCustomer(username):
     cursor = connection.cursor()
     with connection.cursor() as cursor:
         cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
+        data = cursor.fetchall()
+        if len(data) > 0:
+            return True
+    return False
+
+
+#### FIX THIS ######
+def didPurchase(username, id):
+    cursor = connection.cursor()
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        recipe_id = id
+        check = [[sess_user], recipe_id]
+        cursor.execute("SELECT Recipe.title FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s AND Recipe.id = %s", check)
         data = cursor.fetchall()
         if len(data) > 0:
             return True
@@ -266,7 +312,7 @@ def customerHistory(request):
     
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
-        query = cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
+        query = cursor.execute("SELECT Recipe.recipe_id, Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
         print request.session.get('lazylogin', None)
         query = dictfetchall(cursor)
         #print query 
@@ -274,16 +320,49 @@ def customerHistory(request):
     context = {'query' : query}
     return render(request, 'customerHistory.html', context)
 
+
+def cancelOrder(request, id):
+    cursor = connection.cursor()
+    recipe_id = id
+    username = request.session.get('lazylogin', None)
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM purchase WHERE purchase.recipe_id = %s AND purchase.username = %s", [recipe_id, username])
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+def deleteReview(request, id):
+    cursor = connection.cursor()
+    review_id = id
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s", [review_id])
+        cursor.execute("DELETE FROM Review WHERE Review.review_id = %s", [review_id])
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 def recipeDetails(request, id):
     cursor = connection.cursor()
     query = []
-
+    reviews = []
     recipe_id = id
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
-        query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
         query = dictfetchall(cursor)
-    context = {'query' : query}
+        cursor.execute("SELECT * FROM sell WHERE username = %s", [request.session.get('lazylogin', None)])
+        supplierRecipes = dictfetchall(cursor)
+        cursor.execute("SELECT * FROM Review NATURAL JOIN has WHERE has.recipe_id = %s", [recipe_id])
+        reviews = dictfetchall(cursor)
+
+        for review in reviews:
+            cursor.execute("SELECT wrote.username FROM wrote WHERE wrote.review_id = %s", [int(review['review_id'])])
+            usernames = dictfetchall(cursor)
+            review['username'] = usernames[0]['username']
+
+
+    isCust = isCustomer(request.session.get('lazylogin', None))
+    supplierRecipeIDs = []
+    for recipe in supplierRecipes:
+        supplierRecipeIDs.append(recipe['recipe_id'])
+    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews}
     return render(request, 'recipeDetails.html', context)
 
 def ajax_search_recipe(request):
@@ -343,6 +422,20 @@ def viewSupplierProfile(request):
     context = {'query' : query, 'supplierinfo' : supplierinfo}
     return render(request, 'supplierProfile.html', context)
 
+
+def ajax_available_recipe(request):
+    cursor = connection.cursor()
+    if request.is_ajax():
+        q = request.GET.get('q')
+        cursor.execute("UPDATE Recipe SET available = 1 WHERE recipe_id = %s", [q])
+    return HttpResponse(q)
+
+def ajax_unavailable_recipe(request):
+    cursor = connection.cursor()
+    if request.is_ajax():
+        q = request.GET.get('q')
+        cursor.execute("UPDATE Recipe SET available = 0 WHERE recipe_id = %s", [q])
+    return HttpResponse(q)
 
 
 #### MYSQL QUERY EXAMPLE
