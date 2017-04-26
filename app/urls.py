@@ -22,4 +22,6 @@ urlpatterns = [
     url(r'^ajax/unavailable/recipe/$', views.ajax_unavailable_recipe, name='ajax-unavailable-recipe'),
     url(r'^review/upvote/(?P<id>[0-9]+)/$', views.review_upvote, name='review-upvote'),
     url(r'^review/downvote/(?P<id>[0-9]+)/$', views.review_downvote, name='review-downvote'),
+    url(r'^export/customer/$', views.export_customer, name='export-customer'),
+    url(r'^export/supplier/$', views.export_supplier, name='export-supplier'),
 ]

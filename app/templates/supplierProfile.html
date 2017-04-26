@@ -2,23 +2,79 @@
 
 {% block content %}
 
-<h1>Profile</h1>
-    <h2> Hi {{ request.session.lazylogin }}</h2>
-    
-    {% for supplier in supplierinfo %}
-        <h3> Supplier name: <h3>
-        <h4> {{supplier.first_name}} {{supplier.last_name}} <h4>
-        
-        <h3> Address: </h3> 
-        <h4> {{supplier.street}} <h4> 
-        <h4> {{supplier.city}}, {{supplier.state}} {{supplier.zip_code}} <h4> 
-        
-        <h3> Email:  </h3> <h4> {{supplier.email}} </h4>
-        <h3> Phone Number: </h3> <h4> {{supplier.phone_number}} </h4>
-        
-    {% endfor %}
+<div class="container" style="margin-top:50px; margin-bottom:50px;">
 
-<h2> Available Recipes: </h2>
+<h1>Profile - {{ request.session.lazylogin }}</h1>
+<hr>   
+<div class="container bg-info" style="border-radius: 20px;"> 
+    {% for supplier in supplierinfo %}
+
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted">Supplier name:</h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{supplier.username}} </h3>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted">Address:</h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{supplier.street}}</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted"></h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{supplier.city}}, {{supplier.state}} {{supplier.zip_code}}</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted">Email:</h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{supplier.email}}</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted">Phone Number:</h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{supplier.phone_number}}</h3>
+          </div>
+        </div>        
+    {% endfor %}
+</div>
+
+
+<div class="container" style="margin-top:25px;">
+   <div class="row">
+        <div class="col-md-4">
+          <h2>Recipes</h2>
+        </div>
+        <form action="{% url 'export-supplier' %}" method="GET">
+        <div class="col-md-6">
+          <div class="form-group" style="float:right;">
+            <label for="sel1">Export Type:</label>
+            <select class="form-control" id="export_type" name="export_type">
+              <option>JSON</option>
+              <option>XML</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <input type="submit" class="btn btn-primary" style="float:left; margin-top: 25px;">
+        </div>
+        </form>
+      </div>
+   <hr>
     
 <table class = "table table-striped">
 <thead>
@@ -30,11 +86,13 @@
   <tbody>
   {% for recipe in query %}
   <tr>
-    <td> {{ recipe.title }}</td>
+    <td> <a href="{% url 'recipe-details' recipe.recipe_id %}">{{ recipe.title }}</a></td>
     <td> {{ recipe.price }}</td>
   </tr>
   {% endfor %}
   </tbody>
 </table>
 
+</div>
+</div>
 {% endblock %}

@@ -4,6 +4,9 @@ from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth import hashers
+from django.core import serializers
+import xmlrpclib
+import json
 import datetime
 
 from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
@@ -444,7 +447,7 @@ def viewProfile(request):
         sess_user = request.session.get('lazylogin', None)
         #query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
         #query = dictfetchall(cursor)
-        query = cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
+        query = cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date, Recipe.recipe_id FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
         query = dictfetchall(cursor)
         customerinfo = cursor.execute("SELECT * FROM Customer WHERE Customer.username = %s", [sess_user])
         customerinfo = dictfetchall(cursor)
@@ -461,9 +464,7 @@ def viewSupplierProfile(request):
     query = []
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
-        #query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
-        #query = dictfetchall(cursor)
-        query = cursor.execute("SELECT Recipe.title, Recipe.price FROM Recipe NATURAL JOIN Supplier NATURAL JOIN sell WHERE Supplier.username = %s", [sess_user])
+        query = cursor.execute("SELECT Recipe.title, Recipe.price, Recipe.recipe_id FROM Recipe NATURAL JOIN Supplier NATURAL JOIN sell WHERE Supplier.username = %s", [sess_user])
         query = dictfetchall(cursor)
         supplierinfo = cursor.execute("SELECT * FROM Supplier WHERE Supplier.username = %s", [sess_user])
         supplierinfo = dictfetchall(cursor)
@@ -474,6 +475,48 @@ def viewSupplierProfile(request):
     context = {'query' : query, 'supplierinfo' : supplierinfo}
     return render(request, 'supplierProfile.html', context)
 
+def export_customer(request):
+    sess_user = request.session.get('lazylogin', None)
+    export_type = request.GET.get('export_type')
+    cursor = connection.cursor()
+    cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
+    query = dictfetchall(cursor)
+    for item in query:
+        item['date'] = str(item['date'])
+        item['price'] = float(item['price'])
+    filename = sess_user = request.session.get('lazylogin', None) + "History" + str(datetime.datetime.now())        
+    if export_type == "JSON":
+        data = json.dumps(query, indent=4, sort_keys=True)
+        filename = filename + ".json"
+        response = HttpResponse(data, content_type='application/json')
+    elif export_type == "XML":
+        data = xmlrpclib.dumps((query,))
+        filename = filename + ".xml"
+        response = HttpResponse(data, content_type='text/xml')
+    response['Content-Disposition'] = 'attachment; filename=' + filename
+    return response
+
+def export_supplier(request):
+    sess_user = request.session.get('lazylogin', None)
+    export_type = request.GET.get('export_type')
+    cursor = connection.cursor()
+    cursor.execute("SELECT Recipe.title, Recipe.price, Recipe.directions, Recipe.serving_size, Recipe.cooking_time, Recipe.cuisine_type, Recipe.available FROM Recipe NATURAL JOIN Supplier NATURAL JOIN sell WHERE Supplier.username = %s", [sess_user])
+    query = dictfetchall(cursor)
+    for item in query:
+        item['price'] = float(item['price'])
+        item['cooking_time'] = float(item['cooking_time'])
+        item['serving_size'] = float(item['serving_size'])
+    filename = sess_user = request.session.get('lazylogin', None) + "Recipes" + str(datetime.datetime.now())        
+    if export_type == "JSON":
+        data = json.dumps(query, indent=4, sort_keys=True)
+        filename = filename + ".json"
+        response = HttpResponse(data, content_type='application/json')
+    elif export_type == "XML":
+        data = xmlrpclib.dumps((query,))
+        filename = filename + ".xml"
+        response = HttpResponse(data, content_type='text/xml')
+    response['Content-Disposition'] = 'attachment; filename=' + filename
+    return response
 
 def ajax_available_recipe(request):
     cursor = connection.cursor()
