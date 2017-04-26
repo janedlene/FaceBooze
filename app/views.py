@@ -282,18 +282,6 @@ def isCustomer(username):
             return True
     return False
 
-###
-# def didPurchase(username, id):
-#     cursor = connection.cursor()
-#     with connection.cursor() as cursor:
-#         sess_user = request.session.get('lazylogin', None)
-#         recipe_id = id
-#         cursor.execute("SELECT Recipe.recipe_id FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
-#         query = dictfetchall(cursor)
-#         if recipe_id in query:
-#             return True
-#     return False
-
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]
@@ -318,6 +306,7 @@ def deleteReview(request, id):
         cursor.execute("DELETE FROM Vote WHERE Vote.review_id = %s", [review_id])
         cursor.execute("DELETE FROM has WHERE has.review_id = %s", [review_id])
         cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s AND wrote.username = %s", [review_id, sess_user])
+        cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
         cursor.execute("DELETE FROM Review WHERE Review.review_id = %s", [review_id])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -342,31 +331,6 @@ def editReview(request, id):
         form = ReviewForm(initial={'title': fillData[0]['title'], 'body': fillData[0]['body'], 'rating': fillData[0]['rating']})
     context = {'form':form}
     return render(request, 'editReview.html', context)    
-
-@login_required
-def createReview(request, id):
-    cursor = connection.cursor()
-    if request.method == 'POST':
-        form = ReviewForm(request.POST)
-        recipe_id = id
-        if form.is_valid():
-            title = form.cleaned_data['title']
-            body = form.cleaned_data['body']
-            rating = form.cleaned_data['rating']
-            review = [title, body, rating]
-
-            with connection.cursor() as cursor:
-                sess_user = request.session.get('lazylogin', None)
-
-                cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
-                review_id = cursor.lastrowid
-                cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
-                cursor.execute("INSERT INTO wrote(username, review_id) VALUES (%s, %s)", [sess_user, review_id])
-            return HttpResponseRedirect(reverse('recipe-details', kwargs={'id': recipe_id}))
-    else:
-        form = ReviewForm()
-    context = {'form':form}
-    return render(request, 'createReview.html', context)
 
 def recipeDetails(request, id):
     cursor = connection.cursor()
