@@ -382,13 +382,19 @@ def review_upvote(request, id):
     sess_user = request.session.get('lazylogin', None)
     print sess_user
     with connection.cursor() as cursor:
-        sess_user = request.session.get('lazylogin', None)
+        cursor.execute("SELECT * FROM Vote WHERE Vote.username = %s AND Vote.review_id = %s", [sess_user, review_id])
+        userVotes = dictfetchall(cursor)
+        print userVotes
+        if len(userVotes) > 0:
+            messages.error(request, "Cannot vote for review already voted for!")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
         votes = dictfetchall(cursor)
         votes = int(votes[0]['votes'])
         votes = votes + 1
         cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
         cursor.execute("INSERT INTO Vote(review_id, username) VALUES (%s, %s)", [review_id, sess_user])
+        
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 def review_downvote(request, id):
@@ -397,6 +403,11 @@ def review_downvote(request, id):
     sess_user = request.session.get('lazylogin', None)
     print sess_user
     with connection.cursor() as cursor:
+        cursor.execute("SELECT Vote.review_id FROM Vote WHERE username = %s AND review_id = %s", [sess_user, review_id])
+        userVotes = dictfetchall(cursor)
+        if len(userVotes) > 0:
+            messages.error(request, "Cannot vote for review already voted for!")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
         cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
         votes = dictfetchall(cursor)
         votes = int(votes[0]['votes'])
