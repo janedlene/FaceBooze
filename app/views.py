@@ -357,31 +357,31 @@ def editReview(request, id):
     context = {'form':form}
     return render(request, 'editReview.html', context)    
 
-@login_required
-def createReview(request, id):
-    cursor = connection.cursor()
-    if request.method == 'POST':
-        form = ReviewForm(request.POST)
-        print form.errors
-        recipe_id = id
-        if form.is_valid():
-            title = form.cleaned_data['title']
-            body = form.cleaned_data['body']
-            rating = form.cleaned_data['rating']
-            review = [title, body, rating]
+# @login_required
+# def createReview(request, id):
+#     cursor = connection.cursor()
+#     if request.method == 'POST':
+#         form = ReviewForm(request.POST)
+#         print form.errors
+#         recipe_id = id
+#         if form.is_valid():
+#             title = form.cleaned_data['title']
+#             body = form.cleaned_data['body']
+#             rating = form.cleaned_data['rating']
+#             review = [title, body, rating]
 
-            with connection.cursor() as cursor:
-                sess_user = request.session.get('lazylogin', None)
+#             with connection.cursor() as cursor:
+#                 sess_user = request.session.get('lazylogin', None)
 
-                cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
-                review_id = cursor.lastrowid
-                cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
-                cursor.execute("INSERT INTO wrote(username, review_id) VALUES (%s, %s)", [sess_user, review_id])
-            return HttpResponseRedirect(reverse('index'))
-    else:
-        form = ReviewForm()
-    context = {'form':form}
-    return render(request, 'createReview.html', context)
+#                 cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
+#                 review_id = cursor.lastrowid
+#                 cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
+#                 cursor.execute("INSERT INTO wrote(username, review_id) VALUES (%s, %s)", [sess_user, review_id])
+#             return HttpResponseRedirect(reverse('index'))
+#     else:
+#         form = ReviewForm()
+#     context = {'form':form}
+#     return render(request, 'createReview.html', context)
 
 def recipeDetails(request, id):
     cursor = connection.cursor()
