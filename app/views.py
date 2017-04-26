@@ -336,7 +336,10 @@ def editReview(request, id):
                 cursor.execute("UPDATE Review SET Review.title = %s, Review.body = %s, Review.rating = %s WHERE Review.review_id = %s", [title, body, rating, review_id])
                 return HttpResponseRedirect(reverse('index'))
     else:
-        form = ReviewForm()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Review WHERE review_id = %s", [review_id])
+            fillData = dictfetchall(cursor)
+        form = ReviewForm(initial={'title': fillData[0]['title'], 'body': fillData[0]['body'], 'rating': fillData[0]['rating']})
     context = {'form':form}
     return render(request, 'editReview.html', context)    
 
@@ -359,7 +362,7 @@ def createReview(request, id):
                 review_id = cursor.lastrowid
                 cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
                 cursor.execute("INSERT INTO wrote(username, review_id) VALUES (%s, %s)", [sess_user, review_id])
-            return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('recipe-details', kwargs={'id': recipe_id}))
     else:
         form = ReviewForm()
     context = {'form':form}
