@@ -18,5 +18,6 @@ urlpatterns = [
     url(r'^ajax/available/recipe/$', views.ajax_available_recipe, name='ajax-available-recipe'),
     url(r'^ajax/unavailable/recipe/$', views.ajax_unavailable_recipe, name='ajax-unavailable-recipe'),
     url(r'^recipe/delete/(?P<id>[0-9]+)/$', views.deleteReview, name='delete-review'),
-
+    url(r'^review/upvote/(?P<id>[0-9]+)/$', views.review_upvote, name='review-upvote'),
+    url(r'^review/downvote/(?P<id>[0-9]+)/$', views.review_upvote, name='review-downvote'),
 ]

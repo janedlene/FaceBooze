@@ -362,6 +362,29 @@ def recipeDetails(request, id):
     context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews}
     return render(request, 'recipeDetails.html', context)
 
+def review_upvote(request, id):
+    cursor = connection.cursor()
+    review_id = id
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
+        votes = dictfetchall(cursor)
+        votes = int(votes[0]['votes'])
+        votes = votes + 1
+        cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+def review_downvote(request, id):
+    cursor = connection.cursor()
+    review_id = id
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
+        votes = dictfetchall(cursor)
+        votes = int(votes[0]['votes'])
+        votes = votes - 1
+        cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+
 def ajax_search_recipe(request):
     cursor = connection.cursor()
     query = []
