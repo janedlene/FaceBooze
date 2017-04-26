@@ -293,7 +293,7 @@ def editRecipe(request, id):
             ingredient_count = len(ingredientFillData)
             rTitle = {'title': fillData[0]['title']}
             # form = RecipeForm(initial={'title': fillData[0]['title'], 'directions': fillData[0]['directions'], 'serving_size': fillData[0]['serving_size'],  'cooking_time': fillData[0]['cooking_time'],  'cuisine_type': fillData[0]['cuisine_type'],  'price': fillData[0]['price'], 'ingredient_count': ingredient_count})
-            form = RecipeForm(initial={'title': fillData[0]['title'], 'directions': fillData[0]['directions'], 'serving_size': fillData[0]['serving_size'],  'cooking_time': fillData[0]['cooking_time'],  'cuisine_type': fillData[0]['cuisine_type'],  'price': fillData[0]['price']})
+            form = RecipeForm(initial={'src': fillData[0]['src'], 'title': fillData[0]['title'], 'directions': fillData[0]['directions'], 'serving_size': fillData[0]['serving_size'],  'cooking_time': fillData[0]['cooking_time'],  'cuisine_type': fillData[0]['cuisine_type'],  'price': fillData[0]['price']})
             context = {'form': form, 'title': rTitle, 'ingredients': ingredientFillData}
     
     return render(request, 'editRecipe.html', context)

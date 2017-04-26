@@ -27,6 +27,10 @@
 				<h1><a href="{% url 'create-review' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
 			{% else %}
 				{% if recipe.recipe_id in supplierRecipes %}
+					{% if not isCustomer and recipe.recipe_id in supplierRecipes %}
+						<h1><a href="{% url 'edit-recipe' recipe.recipe_id %}" class="btn btn-default" style="float:right; margin-left:5px;">Edit Recipe</a></h1>
+					{% endif %}
+
 					{% if recipe.available %}
 						<button name="availability" class="btn btn-primary" style="float:right;">Make Unavailable</button>
 					{% else %}
@@ -41,15 +45,11 @@
 
 	<div class="row">
 		{% if recipe.src %}
-			<div class="col-md-6" style="width:50%;">
-				<img src="{{recipe.src}}" alt="Recipe">
+			<div class="col-md-6" style="width: 50%;">
+				<img style="max-height:500px; max-width:500px;" src="{{recipe.src}}" alt="Recipe">
 			</div>
 		{% endif %}
 			<div class="col-md-3" style="width:25%;">
-				{% if not isCustomer%}
-					<h1><a href="{% url 'edit-recipe' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Edit Recipe</a></h1>
-				{% endif %}
-
 				<h4>Overview:</h4>
 				<h5>Serving Size: {{ recipe.serving_size }}</h5>
 				<h5>Cooking Time: {{ recipe.cooking_time }} minutes </h5>
