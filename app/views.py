@@ -240,7 +240,7 @@ def sellRecipe(request):
                     query4 = cursor.execute("INSERT INTO contains(name, recipe_id, quantity) VALUES (%s, %s, %s)", ingredient)
             if query and query2 and query3 and query4:
                 messages.success(request, 'Successfully created new recipe called ' + title)
-                form = RecipeForm()
+                return HttpResponseRedirect(reverse('recipe-detail', kwargs={'id': int(rid)}))
             else:
                 messages.error(request, 'Could not create new recipe')
     else:
@@ -416,12 +416,12 @@ def review_upvote(request, id):
         if len(userVotes) > 0:
             messages.error(request, "Cannot vote for review already voted for!")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
-        votes = dictfetchall(cursor)
-        votes = int(votes[0]['votes'])
-        votes = votes + 1
-        cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
-        cursor.execute("INSERT INTO Vote(review_id, username) VALUES (%s, %s)", [review_id, sess_user])
+        # cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
+        # votes = dictfetchall(cursor)
+        # votes = int(votes[0]['votes'])
+        # votes = votes + 1
+        # cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+        cursor.execute("INSERT INTO Vote(review_id, username, type) VALUES (%s, %s, %s)", [review_id, sess_user, 1])
         
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -435,12 +435,12 @@ def review_downvote(request, id):
         if len(userVotes) > 0:
             messages.error(request, "Cannot vote for review already voted for!")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
-        votes = dictfetchall(cursor)
-        votes = int(votes[0]['votes'])
-        votes = votes - 1
-        cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
-        cursor.execute("INSERT INTO Vote(review_id, username) VALUES (%s, %s)", [review_id, sess_user])
+        # cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
+        # votes = dictfetchall(cursor)
+        # votes = int(votes[0]['votes'])
+        # votes = votes - 1
+        # cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+        cursor.execute("INSERT INTO Vote(review_id, username, type) VALUES (%s, %s, %s)", [review_id, sess_user, 0])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 
