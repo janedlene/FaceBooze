@@ -71,40 +71,43 @@
 
 {% endfor %}
 
+{% if reviews %}
 <h2 style="margin-top:50px;">Reviews</h2>
-<table class="table table-striped" id="recipe-table">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Body</th>
-        <th>Rating</th>
-        <th>User</th>
-        <th>Votes</th>
-      </tr>
-    </thead>
-    <tbody>
-		{% for review in reviews %}
-			<tr>
-				<td>{{ review.title }}</td>
-				<td>{{ review.body }}</td>
-				<td>{{review.rating}}</td>
-				<td>{{ review.username }}</td>
-				<td>{{review.votes}}</td>
 
-				{% if isCustomer and review.review_id in myreviews %}
-					<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
-					<td><a href="{% url 'edit-review' review.review_id %}" class="btn btn-default">Edit</a></td>
-				{% endif %}
+	<table class="table table-striped" id="recipe-table">
+	    <thead>
+	      <tr>
+	        <th>Title</th>
+	        <th>Body</th>
+	        <th>Rating</th>
+	        <th>User</th>
+	        <th>Votes</th>
+	      </tr>
+	    </thead>
+	    <tbody>
+			{% for review in reviews %}
+				<tr>
+					<td>{{ review.title }}</td>
+					<td>{{ review.body }}</td>
+					<td>{{review.rating}}</td>
+					<td>{{ review.username }}</td>
+					<td>{{review.votes}}</td>
 
-				{% if isCustomer %}
-					<td><a href="{% url 'review-upvote' review.review_id %}" class="btn btn-default">Upvote</a></td>
-					<td><a href="{% url 'review-downvote' review.review_id %}" class="btn btn-default">Downvote</a></td>
-				{% endif %}
-			</tr>
-		
-		{% endfor %}
-	</tbody>
-</table>
+					{% if isCustomer and review.review_id in myreviews %}
+						<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
+						<td><a href="{% url 'edit-review' review.review_id %}" class="btn btn-default">Edit</a></td>
+					{% endif %}
+
+					{% if isCustomer %}
+						<td><a href="{% url 'review-upvote' review.review_id %}" class="btn btn-default">Upvote</a></td>
+						<td><a href="{% url 'review-downvote' review.review_id %}" class="btn btn-default">Downvote</a></td>
+					{% endif %}
+				</tr>
+			
+			{% endfor %}
+		</tbody>
+	</table>
+{% endif %}
 
 </div>
 
