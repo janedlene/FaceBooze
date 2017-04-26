@@ -14,11 +14,14 @@
 		
 		//alert("form count is: " + form_count);
 		//build element and append it to our form
-		element = $('<input type="text"/>');
-		element.attr('name', 'ingredient_' + form_count);
+		ingredient = $('<input type="text"/>');
+		ingredient.attr('name', 'ingredient_' + form_count);
+		quantity = $('<input type="Number"/>');
+		quantity.attr('name', 'iquantity_' + form_count);
 		br = $('<br>');
-		element.append(br);
-		$("#rForm").append(element);
+		ingredient.append(quantity);
+		quantity.append(br);
+		$("#rForm").append(ingredient);
 		form_count++;
 		$("[name=ingredient_count]").val(form_count);
 	}

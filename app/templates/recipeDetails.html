@@ -37,11 +37,11 @@
 	<h5>Cooking Time: {{ recipe.cooking_time }} minutes </h5>
 	<h5>Cuisine Type: {{ recipe.cuisine_type }}</h5>
 	<h5>Price: $ {{recipe.price}}</h5>
-	<h5>Ingredients:</h5> 
+	<h5>Ingredients: </h5> 
 	<ul>
 	{% for ingredient in ingredients %}
 		
-		<li>{{ingredient.name}}</li>
+		<li>{{ingredient.quantity}} {{ingredient.name}}</li>
 
 	{% endfor %}
 	</ul>

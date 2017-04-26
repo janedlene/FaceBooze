@@ -10,12 +10,8 @@
 			<h1>Welcome {{ request.session.lazylogin }}</h1>
 		</div>
 		<div class="col-md-6">
-			{% if isCustomer %}
-			
-				<h1><a href="{% url 'view-profile' %}" class="btn btn-default" style="float:right;"> View Profile</a></h1>
-
-			{% else %}
-				<h1><a href="{% url 'view-supplier-profile' %}" class="btn btn-default" style="float:right;">View Profile</a></h1>
+			{% if not isCustomer %}
+				<h1><a href="{% url 'sell-recipe' %}" class="btn btn-success" style="float:right;">Create Recipe</a></h1>
 			{% endif %}
 		</div>
 	</div>
