@@ -282,18 +282,6 @@ def isCustomer(username):
             return True
     return False
 
-###
-# def didPurchase(username, id):
-#     cursor = connection.cursor()
-#     with connection.cursor() as cursor:
-#         sess_user = request.session.get('lazylogin', None)
-#         recipe_id = id
-#         cursor.execute("SELECT Recipe.recipe_id FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
-#         query = dictfetchall(cursor)
-#         if recipe_id in query:
-#             return True
-#     return False
-
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]
