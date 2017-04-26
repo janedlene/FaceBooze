@@ -18,5 +18,6 @@ urlpatterns = [
     url(r'^ajax/search/recipe/$', views.ajax_search_recipe, name='ajax-search-recipe'),
     url(r'^ajax/available/recipe/$', views.ajax_available_recipe, name='ajax-available-recipe'),
     url(r'^ajax/unavailable/recipe/$', views.ajax_unavailable_recipe, name='ajax-unavailable-recipe'),
+    url(r'^recipe/delete/(?P<id>[0-9]+)/$', views.deleteReview, name='delete-review'),
 
 ]

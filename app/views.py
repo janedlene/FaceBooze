@@ -39,6 +39,8 @@ def login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            print username
+            print password
             user = [username]
             if request.POST.get('submit', None) == 'Customer Login':
                 cursor.execute("SELECT password FROM Customer WHERE username = %s", user)
@@ -47,6 +49,7 @@ def login(request):
             query = cursor.fetchone()
             if query:
                 query = query[0]
+                print query
                 if hashers.check_password(password, query):
                     request.session["lazylogin"] = username
                     messages.success(request, 'Successfully logged in')
@@ -292,13 +295,31 @@ def customerHistory(request):
     
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
-        query = cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
+        query = cursor.execute("SELECT Recipe.recipe_id, Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
         print request.session.get('lazylogin', None)
         query = dictfetchall(cursor)
         #print query 
     print query
     context = {'query' : query}
     return render(request, 'customerHistory.html', context)
+
+
+def cancelOrder(request, id):
+    cursor = connection.cursor()
+    recipe_id = id
+    username = request.session.get('lazylogin', None)
+    with connection.cursor() as cursor:
+        cursor.execute("DELETE FROM purchase WHERE purchase.recipe_id = %s AND purchase.username = %s", [recipe_id, username])
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
+def deleteReview(request, id):
+    cursor = connection.cursor()
+    review_id = id
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s", [review_id])
+        cursor.execute("DELETE FROM Review WHERE Review.review_id = %s", [review_id])
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 def recipeDetails(request, id):
     cursor = connection.cursor()
@@ -314,8 +335,12 @@ def recipeDetails(request, id):
         cursor.execute("SELECT * FROM Review NATURAL JOIN has WHERE has.recipe_id = %s", [recipe_id])
         reviews = dictfetchall(cursor)
 
-        ## how to get each review_id ??
-        ##cursor.execute("SELECT has.username FROM has WHERE has.review_id = %s", [review_id])
+        for review in reviews:
+            cursor.execute("SELECT wrote.username FROM wrote WHERE wrote.review_id = %s", [int(review['review_id'])])
+            usernames = dictfetchall(cursor)
+            review['username'] = usernames[0]['username']
+
+
     isCust = isCustomer(request.session.get('lazylogin', None))
     supplierRecipeIDs = []
     for recipe in supplierRecipes:
@@ -341,21 +366,7 @@ def ajax_search_recipe(request):
     context = {'query': query, 'isCustomer' : isCust, 'custHistory': history} 
     return render(request, '_recipes.html', context)
 
-### FIX THISS TOOO ###
-def cancelOrder(request, id):
-    cursor = connection.cursor()
-    query = []
-    with connection.cursor() as cursor:
-        recipe_id = id
-        sess_user = request.session.get('lazylogin', None)
-        check = [recipe_id, sess_user]
-        query = cursor.execute("DELETE * FROM purchase NATURAL JOIN Recipe NATURAL JOIN Customer WHERE purchase.recipe_id = %s AND Customer.username = %s", check)
-        if query:
-            messages.success(request, 'Successfully cancelled order')
-    context = {'query': query}
-    return render(request, 'recipeDetails.html', context)
-
-
+'OR '
 
 
 def ajax_available_recipe(request):

@@ -46,7 +46,7 @@
 		{% endif %}
 	{% endif %}
 	
-	
+
 
 
 {% endfor %}
@@ -58,17 +58,21 @@
         <th>Title</th>
         <th>Body</th>
         <th>Rating</th>
+        <th>User</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
 		{% for review in reviews %}
-	<tr>
-		<td>{{ review.title }}</td>
-		<td>{{ review.body }}</td>
-		<td>{{review.rating}}</td>
-	</tr>
+			<tr>
+				<td>{{ review.title }}</td>
+				<td>{{ review.body }}</td>
+				<td>{{review.rating}}</td>
+				<td>{{ review.username }}</td>
+				<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
+			</tr>
 		
-{% endfor %}
+		{% endfor %}
 	</tbody>
 </table>
 
