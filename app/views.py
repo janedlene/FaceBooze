@@ -233,10 +233,11 @@ def sellRecipe(request):
                 query2 = cursor.execute("INSERT INTO sell(recipe_id, username) VALUES (%s, %s)", selling)
                 for x in range (int(ingredient_count)):
                     ingred = form.cleaned_data['ingredient_' + str(x)]
+                    quant = form.cleaned_data['quantity_' + str(x)]
                     #check if ingredient is in ingredient list, if it isn't, add it
                     query3 = cursor.execute("""INSERT INTO Ingredient(name) VALUES (%s) ON DUPLICATE KEY UPDATE name = %s """, (ingred, ingred))
-                    ingredient = [ingred, rid]
-                    query4 = cursor.execute("INSERT INTO contains(name, recipe_id) VALUES (%s, %s)", ingredient)
+                    ingredient = [ingred, rid, quant]
+                    query4 = cursor.execute("INSERT INTO contains(name, recipe_id, quantity) VALUES (%s, %s, %s)", ingredient)
             if query and query2 and query3 and query4:
                 messages.success(request, 'Successfully created new recipe called ' + title)
                 form = RecipeForm()
@@ -350,9 +351,10 @@ def recipeDetails(request, id):
         query = dictfetchall(cursor)
         cursor.execute("SELECT * FROM sell WHERE username = %s", [request.session.get('lazylogin', None)])
         supplierRecipes = dictfetchall(cursor)
+        cursor.execute("SELECT name, quantity FROM contains WHERE recipe_id = %s", [recipe_id])
+        ingredients = dictfetchall(cursor)
         cursor.execute("SELECT * FROM Review NATURAL JOIN has WHERE has.recipe_id = %s", [recipe_id])
         reviews = dictfetchall(cursor)
-
         for review in reviews:
             cursor.execute("SELECT wrote.username FROM wrote WHERE wrote.review_id = %s", [int(review['review_id'])])
             usernames = dictfetchall(cursor)
@@ -362,13 +364,16 @@ def recipeDetails(request, id):
         customerReviews = cursor.fetchall()
     myreviews = []
     for review in customerReviews:
-        myreviews.append(review[0])
+        myreviews.append(review[0])    
 
     isCust = isCustomer(request.session.get('lazylogin', None))
     supplierRecipeIDs = []
+
     for recipe in supplierRecipes:
         supplierRecipeIDs.append(recipe['recipe_id'])
-    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews, 'myreviews':myreviews}
+
+    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews, 'myreviews':myreviews, 'ingredients': ingredients}
+
     return render(request, 'recipeDetails.html', context)
 
 def review_upvote(request, id):

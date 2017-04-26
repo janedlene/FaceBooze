@@ -31,12 +31,20 @@
 
 	<hr>
 
-	<h4>Directions: {{recipe.directions}}</h4>
+	<h4>Directions: {{ recipe.directions }}</h4>
 
-	<h5>Serving Size: {{recipe.serving_size}}</h5>
-	<h5>Cuisine Type: {{ recipe.cuisine_type}}</h5>
+	<h5>Serving Size: {{ recipe.serving_size }}</h5>
+	<h5>Cooking Time: {{ recipe.cooking_time }} minutes </h5>
+	<h5>Cuisine Type: {{ recipe.cuisine_type }}</h5>
 	<h5>Price: $ {{recipe.price}}</h5>
+	<h5>Ingredients: </h5> 
+	<ul>
+	{% for ingredient in ingredients %}
+		
+		<li>{% if not ingredients.quantity == NULL %} {{ingredient.quantity}} {% endif %} {{ingredient.name}}</li>
 
+	{% endfor %}
+	</ul>
 	<br>
 	{% if recipe.recipe_id in supplierRecipes %}
 		{% if recipe.available %}

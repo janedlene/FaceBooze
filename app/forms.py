@@ -56,6 +56,7 @@ class RecipeForm(forms.Form):
 		for index in range(int(extra_fields)):
 			# generate extra fields in the number specified via extra_fields
 			self.fields['ingredient_{index}'.format(index=index)] = forms.CharField()
+			self.fields['quantity_{index}'.format(index=index)] = forms.IntegerField()
 
 class OrderHistoryForm(forms.Form):
 	title = forms.CharField(label = 'Title', max_length=50)
