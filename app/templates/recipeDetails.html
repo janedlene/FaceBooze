@@ -24,7 +24,7 @@
 			{% endif %}
 			</h2>
 		</div>
-		{% if isCustomer%}
+		{% if isCustomer %}
 			<h1><a href="{% url 'create-review' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Write a Review</a></h1>
 		{% endif %}
 	</div>
@@ -81,6 +81,7 @@
 
 				{% if isCustomer and review.review_id in myreviews %}
 					<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
+					<td><a href="{% url 'edit-review' review.review_id %}" class="btn btn-default">Edit</a></td>
 				{% endif %}
 
 				{% if isCustomer %}
