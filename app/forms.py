@@ -1,4 +1,5 @@
 from django import forms
+from decimal import Decimal
 
 class LoginForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)
@@ -38,11 +39,12 @@ class ReviewForm(forms.Form):
 class RecipeForm(forms.Form):
 	title = forms.CharField(label='Title', max_length=50)
 	directions = forms.CharField(label="Directions", max_length=65000)
-	serving_size = forms.DecimalField(label="Serving Size", max_digits=2)
-	cooking_time = forms.DecimalField(label="Cooking Time", max_digits=3)
+	serving_size = forms.DecimalField(label="Serving Size", max_digits=2, min_value=Decimal('0.01'))
+	cooking_time = forms.DecimalField(label="Cooking Time", max_digits=3, min_value=Decimal('0.01'))
 	cuisine_type = forms.CharField(label="Cuisine Type", max_length=20)
-	price = forms.DecimalField(label="Price", decimal_places=2)
+	price = forms.DecimalField(label="Price", decimal_places=2, min_value=Decimal('0.01'))
 	ingredient_count = forms.CharField(label="Ingredient Count", widget = forms.HiddenInput())
+	src = forms.CharField(label="Image Source", max_length=500)
 
 	def __init__(self, *args, **kwargs):
 		extra_fields = kwargs.pop('extra', 0)
