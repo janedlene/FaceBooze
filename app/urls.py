@@ -14,6 +14,7 @@ urlpatterns = [
     #url(r'^sellrecipe/$', views.sellRecipe, name='sell-recipe'),
     #url(r'^customerhistory/$', views.customerHistory, name='customer-history'),
     url(r'^recipe/sell/$', views.sellRecipe, name='sell-recipe'),
+    url(r'^recipe/editrecipe/(?P<id>[0-9]+)/$', views.editRecipe, name='edit-recipe'),
     url(r'^recipe/buy/(?P<id>[0-9]+)/$', views.buyRecipe, name='buy-recipe'),
     url(r'^recipe/details/(?P<id>[0-9]+)/$', views.recipeDetails, name='recipe-details'),
     url(r'^recipe/delete/(?P<id>[0-9]+)/$', views.deleteReview, name='delete-review'),

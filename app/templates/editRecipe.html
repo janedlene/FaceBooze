@@ -4,7 +4,7 @@
 
 {% block content %}
 
-<div class="container"><h1 style="margin-top:50px; text-align:center;">Create a Recipe to Sell</h1></div>
+<div class="container"><h1 style="margin-top:50px; text-align:center;">Edit {{ title.title }} </h1></div>
 
 <script type="text/javascript">
 	function addIngredient(){
@@ -48,7 +48,7 @@
 			{% endfor %}
 		</div>
 		<button style="margin-top:15px; margin-bottom:15px;" class="btn btn-success" id="add_ingredient" onclick="addIngredient()">Add Ingredient</button>
-		<input style="margin-top:15px; margin-bottom:15px;" class="btn btn-primary" type="submit" name="submit" value="Create Recipe" />
+		<input style="margin-top:15px; margin-bottom:15px;" class="btn btn-primary" type="submit" name="submit" value="Edit Recipe" />
 	</form>
 </div>
 {% endblock %}

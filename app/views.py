@@ -248,6 +248,54 @@ def sellRecipe(request):
     context = {'form': form}
     return render(request, 'sellRecipe.html', context)
 
+def editRecipe(request, id):
+    cursor = connection.cursor()
+    rid = id
+    if request.method == 'POST':
+        form = RecipeForm(request.POST, extra=request.POST.get('ingredient_count'))
+        if form.is_valid():
+            title = form.cleaned_data['title']
+            directions = form.cleaned_data['directions']
+            serving_size = form.cleaned_data['serving_size']
+            cooking_time = form.cleaned_data['cooking_time']
+            cuisine_type = form.cleaned_data['cuisine_type']
+            price = form.cleaned_data['price']
+            recipe = [title, directions, serving_size, cooking_time, cuisine_type, price, rid]
+
+            # ingredient_count = form.cleaned_data['ingredient_count']
+            
+
+            with connection.cursor() as cursor:
+                query = cursor.execute("UPDATE Recipe SET title=%s, directions = %s, serving_size = %s, cooking_time = %s, cuisine_type=%s, price=%s WHERE recipe_id = %s", recipe)
+                query2 = cursor.execute("DELETE FROM contains WHERE recipe_id = %s", [rid]) #remove all old ingredients linked to recipe
+                #insert ingredients into ingredients table and into many to many table
+                # for x in range (int(ingredient_count)):
+                #     ingred = form.cleaned_data['ingredient_' + str(x)]
+                #     quant = form.cleaned_data['quantity_' + str(x)]
+                #     #check if ingredient is in ingredient list, if it isn't, add it
+                #     query3 = cursor.execute("""INSERT INTO Ingredient(name) VALUES (%s) ON DUPLICATE KEY UPDATE name = %s """, (ingred, ingred))
+                #     ingredient = [ingred, rid, quant]
+                #     query4 = cursor.execute("INSERT INTO contains(name, recipe_id, quantity) VALUES (%s, %s, %s)", ingredient)
+            # if query and query2 and query3 and query4:
+            if query and query2:
+                messages.success(request, 'Successfully edited recipe called ' + title)
+                form = RecipeForm()
+            else:
+                messages.error(request, 'Could not edit recipe')
+        context = {'form': form}
+    else:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [rid])
+            fillData = dictfetchall(cursor)
+            cursor.execute("SELECT * FROM contains WHERE recipe_id = %s", [rid])
+            ingredientFillData = dictfetchall(cursor)
+            ingredient_count = len(ingredientFillData)
+            rTitle = {'title': fillData[0]['title']}
+            # form = RecipeForm(initial={'title': fillData[0]['title'], 'directions': fillData[0]['directions'], 'serving_size': fillData[0]['serving_size'],  'cooking_time': fillData[0]['cooking_time'],  'cuisine_type': fillData[0]['cuisine_type'],  'price': fillData[0]['price'], 'ingredient_count': ingredient_count})
+            form = RecipeForm(initial={'title': fillData[0]['title'], 'directions': fillData[0]['directions'], 'serving_size': fillData[0]['serving_size'],  'cooking_time': fillData[0]['cooking_time'],  'cuisine_type': fillData[0]['cuisine_type'],  'price': fillData[0]['price']})
+            context = {'form': form, 'title': rTitle, 'ingredients': ingredientFillData}
+    
+    return render(request, 'editRecipe.html', context)
 
 def buyRecipe(request, id):
     cursor = connection.cursor()

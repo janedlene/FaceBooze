@@ -39,6 +39,10 @@
 
 	<hr>
 
+	{% if not isCustomer%}
+		<h1><a href="{% url 'edit-recipe' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Edit Recipe</a></h1>
+	{% endif %}
+
 	<h4>Directions: {{ recipe.directions }}</h4>
 
 	<h5>Serving Size: {{ recipe.serving_size }}</h5>
