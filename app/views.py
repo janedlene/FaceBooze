@@ -356,12 +356,15 @@ def recipeDetails(request, id):
             usernames = dictfetchall(cursor)
             review['username'] = usernames[0]['username']
 
-
+        cursor.execute("SELECT name FROM contains WHERE recipe_id = %s", [recipe_id])
+        ingredients = dictfetchall(cursor)
+        
     isCust = isCustomer(request.session.get('lazylogin', None))
     supplierRecipeIDs = []
+
     for recipe in supplierRecipes:
         supplierRecipeIDs.append(recipe['recipe_id'])
-    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews}
+    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews, 'ingredients': ingredients}
     return render(request, 'recipeDetails.html', context)
 
 def review_upvote(request, id):
