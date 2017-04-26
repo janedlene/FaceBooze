@@ -176,6 +176,7 @@ def index(request):
     context = {'isCustomer': isCust, 'query': query, 'custHistory': history}
     return render(request, 'index.html', context)
 
+"""
 @login_required
 def createReview(request):
     cursor = connection.cursor()
@@ -193,6 +194,7 @@ def createReview(request):
         form = ReviewForm()
     context = {'form':form}
     return render(request, 'createReview.html', context)
+"""
 
 @login_required
 def sellRecipe(request):
@@ -257,6 +259,7 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
+
 def customerHistory(request):
     cursor = connection.cursor()
     query = []
@@ -300,6 +303,46 @@ def ajax_search_recipe(request):
         history.append(purchase[0])
     context = {'query': query, 'isCustomer' : isCust, 'custHistory': history} 
     return render(request, '_recipes.html', context)
+
+
+
+def viewProfile(request):
+    cursor = connection.cursor()
+    query = []
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        #query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        #query = dictfetchall(cursor)
+        query = cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
+        query = dictfetchall(cursor)
+        customerinfo = cursor.execute("SELECT * FROM Customer WHERE Customer.username = %s", [sess_user])
+        customerinfo = dictfetchall(cursor)
+        print request.session.get('lazylogin', None)
+        
+        
+    print query
+    context = {'query' : query, 'customerinfo' : customerinfo}
+    return render(request, 'profile.html', context)
+
+
+def viewSupplierProfile(request):
+    cursor = connection.cursor()
+    query = []
+    with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
+        #query = cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
+        #query = dictfetchall(cursor)
+        query = cursor.execute("SELECT Recipe.title, Recipe.price FROM Recipe NATURAL JOIN Supplier NATURAL JOIN sell WHERE Supplier.username = %s", [sess_user])
+        query = dictfetchall(cursor)
+        supplierinfo = cursor.execute("SELECT * FROM Supplier WHERE Supplier.username = %s", [sess_user])
+        supplierinfo = dictfetchall(cursor)
+        print request.session.get('lazylogin', None)
+        
+        
+    print query
+    context = {'query' : query, 'supplierinfo' : supplierinfo}
+    return render(request, 'supplierProfile.html', context)
+
 
 
 #### MYSQL QUERY EXAMPLE
