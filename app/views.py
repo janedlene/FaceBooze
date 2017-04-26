@@ -179,7 +179,7 @@ def index(request):
     context = {'isCustomer': isCust, 'query': query, 'custHistory': history}
     return render(request, 'index.html', context)
 
-"""
+
 @login_required
 def createReview(request, id):
     cursor = connection.cursor()
@@ -188,7 +188,6 @@ def createReview(request, id):
         print form.errors
         recipe_id = id
         if form.is_valid():
-            print "forms valid"
             title = form.cleaned_data['title']
             body = form.cleaned_data['body']
             rating = form.cleaned_data['rating']
@@ -206,7 +205,7 @@ def createReview(request, id):
         form = ReviewForm()
     context = {'form':form}
     return render(request, 'createReview.html', context)
-"""
+
 
 @login_required
 def sellRecipe(request):
