@@ -219,14 +219,15 @@ def sellRecipe(request):
             cooking_time = form.cleaned_data['cooking_time']
             cuisine_type = form.cleaned_data['cuisine_type']
             price = form.cleaned_data['price']
-            recipe = [title, directions, serving_size, cooking_time, cuisine_type, price]
+            image = form.cleaned_data['src']
+            recipe = [title, directions, serving_size, cooking_time, cuisine_type, price, image]
 
             ingredient_count = form.cleaned_data['ingredient_count']
             username = request.session.get('lazylogin', None)
             
 
             with connection.cursor() as cursor:
-                query = cursor.execute("INSERT INTO Recipe(title, directions, serving_size, cooking_time, cuisine_type, price) VALUES (%s, %s, %s, %s, %s, %s)", recipe)
+                query = cursor.execute("INSERT INTO Recipe(title, directions, serving_size, cooking_time, cuisine_type, price, src) VALUES (%s, %s, %s, %s, %s, %s, %s)", recipe)
                 #insert ingredients into ingredients table and into many to many table
                 rid = cursor.lastrowid
                 selling = [rid, username]
@@ -240,7 +241,6 @@ def sellRecipe(request):
                     query4 = cursor.execute("INSERT INTO contains(name, recipe_id, quantity) VALUES (%s, %s, %s)", ingredient)
             if query and query2 and query3 and query4:
                 messages.success(request, 'Successfully created new recipe called ' + title)
-                form = RecipeForm()
             else:
                 messages.error(request, 'Could not create new recipe')
     else:
@@ -260,13 +260,14 @@ def editRecipe(request, id):
             cooking_time = form.cleaned_data['cooking_time']
             cuisine_type = form.cleaned_data['cuisine_type']
             price = form.cleaned_data['price']
-            recipe = [title, directions, serving_size, cooking_time, cuisine_type, price, rid]
+            image = form.cleaned_data['src']
+            recipe = [title, directions, serving_size, cooking_time, cuisine_type, price, image, rid]
 
             # ingredient_count = form.cleaned_data['ingredient_count']
             
 
             with connection.cursor() as cursor:
-                query = cursor.execute("UPDATE Recipe SET title=%s, directions = %s, serving_size = %s, cooking_time = %s, cuisine_type=%s, price=%s WHERE recipe_id = %s", recipe)
+                query = cursor.execute("UPDATE Recipe SET title=%s, directions = %s, serving_size = %s, cooking_time = %s, cuisine_type=%s, price=%s, src=%s WHERE recipe_id = %s", recipe)
                 query2 = cursor.execute("DELETE FROM contains WHERE recipe_id = %s", [rid]) #remove all old ingredients linked to recipe
                 #insert ingredients into ingredients table and into many to many table
                 # for x in range (int(ingredient_count)):
@@ -330,18 +331,6 @@ def isCustomer(username):
             return True
     return False
 
-###
-# def didPurchase(username, id):
-#     cursor = connection.cursor()
-#     with connection.cursor() as cursor:
-#         sess_user = request.session.get('lazylogin', None)
-#         recipe_id = id
-#         cursor.execute("SELECT Recipe.recipe_id FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
-#         query = dictfetchall(cursor)
-#         if recipe_id in query:
-#             return True
-#     return False
-
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]
@@ -366,6 +355,7 @@ def deleteReview(request, id):
         cursor.execute("DELETE FROM Vote WHERE Vote.review_id = %s", [review_id])
         cursor.execute("DELETE FROM has WHERE has.review_id = %s", [review_id])
         cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s AND wrote.username = %s", [review_id, sess_user])
+        cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
         cursor.execute("DELETE FROM Review WHERE Review.review_id = %s", [review_id])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -390,31 +380,6 @@ def editReview(request, id):
         form = ReviewForm(initial={'title': fillData[0]['title'], 'body': fillData[0]['body'], 'rating': fillData[0]['rating']})
     context = {'form':form}
     return render(request, 'editReview.html', context)    
-
-@login_required
-def createReview(request, id):
-    cursor = connection.cursor()
-    if request.method == 'POST':
-        form = ReviewForm(request.POST)
-        recipe_id = id
-        if form.is_valid():
-            title = form.cleaned_data['title']
-            body = form.cleaned_data['body']
-            rating = form.cleaned_data['rating']
-            review = [title, body, rating]
-
-            with connection.cursor() as cursor:
-                sess_user = request.session.get('lazylogin', None)
-
-                cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
-                review_id = cursor.lastrowid
-                cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
-                cursor.execute("INSERT INTO wrote(username, review_id) VALUES (%s, %s)", [sess_user, review_id])
-            return HttpResponseRedirect(reverse('recipe-details', kwargs={'id': recipe_id}))
-    else:
-        form = ReviewForm()
-    context = {'form':form}
-    return render(request, 'createReview.html', context)
 
 def recipeDetails(request, id):
     cursor = connection.cursor()
@@ -464,12 +429,12 @@ def review_upvote(request, id):
         if len(userVotes) > 0:
             messages.error(request, "Cannot vote for review already voted for!")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
-        votes = dictfetchall(cursor)
-        votes = int(votes[0]['votes'])
-        votes = votes + 1
-        cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
-        cursor.execute("INSERT INTO Vote(review_id, username) VALUES (%s, %s)", [review_id, sess_user])
+        # cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
+        # votes = dictfetchall(cursor)
+        # votes = int(votes[0]['votes'])
+        # votes = votes + 1
+        # cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+        cursor.execute("INSERT INTO Vote(review_id, username, type) VALUES (%s, %s, %s)", [review_id, sess_user, 1])
         
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
@@ -483,12 +448,12 @@ def review_downvote(request, id):
         if len(userVotes) > 0:
             messages.error(request, "Cannot vote for review already voted for!")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
-        votes = dictfetchall(cursor)
-        votes = int(votes[0]['votes'])
-        votes = votes - 1
-        cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
-        cursor.execute("INSERT INTO Vote(review_id, username) VALUES (%s, %s)", [review_id, sess_user])
+        # cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
+        # votes = dictfetchall(cursor)
+        # votes = int(votes[0]['votes'])
+        # votes = votes - 1
+        # cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+        cursor.execute("INSERT INTO Vote(review_id, username, type) VALUES (%s, %s, %s)", [review_id, sess_user, 0])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 

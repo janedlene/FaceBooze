@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^review/downvote/(?P<id>[0-9]+)/$', views.review_downvote, name='review-downvote'),
     url(r'^export/customer/$', views.export_customer, name='export-customer'),
     url(r'^export/supplier/$', views.export_supplier, name='export-supplier'),
+    url(r'^recipe/cancel/(?P<id>[0-9]+)/$', views.cancelOrder, name='cancel-order'),
 ]

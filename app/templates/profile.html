@@ -89,6 +89,7 @@
           <td> <a href="{% url 'recipe-details' recipe.recipe_id %}">{{ recipe.title }}</a></td>
           <td> {{ recipe.price }}</td>
           <td> {{ recipe.date }}</td>
+          <td><a href="{% url 'cancel-order' recipe.recipe_id %}" class="btn btn-primary">Cancel Order</a></td>
         </tr>
         {% endfor %}
         </tbody>

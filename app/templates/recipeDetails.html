@@ -39,32 +39,44 @@
 
 	<hr>
 
-	{% if not isCustomer%}
-		<h1><a href="{% url 'edit-recipe' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Edit Recipe</a></h1>
-	{% endif %}
+	<div class="row">
+		{% if recipe.src %}
+			<div class="col-md-6" style="width:50%;">
+				<img src="{{recipe.src}}" alt="Recipe">
+			</div>
+		{% endif %}
+			<div class="col-md-3" style="width:25%;">
+				{% if not isCustomer%}
+					<h1><a href="{% url 'edit-recipe' recipe.recipe_id %}" class="btn btn-default" style="float:right;">Edit Recipe</a></h1>
+				{% endif %}
 
-	<h4>Directions: {{ recipe.directions }}</h4>
+				<h4>Overview:</h4>
+				<h5>Serving Size: {{ recipe.serving_size }}</h5>
+				<h5>Cooking Time: {{ recipe.cooking_time }} minutes </h5>
+				<h5>Cuisine Type: {{ recipe.cuisine_type }}</h5>
+				<h5>Price: $ {{recipe.price}}</h5>
+			</div>
+			<div class="col-md-4" style="width:25%;">
+				{% if ingredients %}
+					<h4>Ingredients: </h4> 
+					<ul>
+					{% for ingredient in ingredients %}
+						
+						<li>{% if not ingredients.quantity == NULL %} {{ingredient.quantity}} {% endif %} {{ingredient.name}}</li>
 
-	<h5>Serving Size: {{ recipe.serving_size }}</h5>
-	<h5>Cooking Time: {{ recipe.cooking_time }} minutes </h5>
-	<h5>Cuisine Type: {{ recipe.cuisine_type }}</h5>
-	<h5>Price: $ {{recipe.price}}</h5>
-	<h5>Ingredients: </h5> 
-	<ul>
-	{% for ingredient in ingredients %}
-		
-		<li>{% if not ingredients.quantity == NULL %} {{ingredient.quantity}} {% endif %} {{ingredient.name}}</li>
-
-	{% endfor %}
-	</ul>
-	<br>
-	
-
-
+					{% endfor %}
+				{% endif %}
+				</ul>
+			</div>
+		<br>
+	</div>
+	<h2>Directions</h2>
+	<hr>
+	<h4>{{ recipe.directions }}</h4>
 
 {% endfor %}
 
-<h3>Reviews</h3>
+<h2 style="margin-top:50px;">Reviews</h2>
 <table class="table table-striped" id="recipe-table">
     <thead>
       <tr>
