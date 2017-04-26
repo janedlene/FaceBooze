@@ -283,7 +283,6 @@ def isCustomer(username):
     return False
 
 
-#### FIX THIS ######
 def didPurchase(username, id):
     cursor = connection.cursor()
     with connection.cursor() as cursor:
@@ -333,15 +332,18 @@ def deleteReview(request, id):
     review_id = id
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
-        cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s", [review_id])
+        cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s AND wrote.username = %s", [review_id, sess_user])
         cursor.execute("DELETE FROM Review WHERE Review.review_id = %s", [review_id])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
 
 def recipeDetails(request, id):
     cursor = connection.cursor()
     query = []
     reviews = []
+    customerReviews = []
     recipe_id = id
+
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
         cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
@@ -356,34 +358,46 @@ def recipeDetails(request, id):
             usernames = dictfetchall(cursor)
             review['username'] = usernames[0]['username']
 
+        cursor.execute("SELECT wrote.review_id FROM wrote WHERE wrote.username = %s", [sess_user])
+        customerReviews = cursor.fetchall()
+    myreviews = []
+    for review in customerReviews:
+        myreviews.append(review[0])
 
     isCust = isCustomer(request.session.get('lazylogin', None))
     supplierRecipeIDs = []
     for recipe in supplierRecipes:
         supplierRecipeIDs.append(recipe['recipe_id'])
-    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews}
+    context = {'isCustomer': isCust, 'query' : query, 'supplierRecipes': supplierRecipeIDs, 'reviews' : reviews, 'myreviews':myreviews}
     return render(request, 'recipeDetails.html', context)
 
 def review_upvote(request, id):
     cursor = connection.cursor()
     review_id = id
+    sess_user = request.session.get('lazylogin', None)
+    print sess_user
     with connection.cursor() as cursor:
+        sess_user = request.session.get('lazylogin', None)
         cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
         votes = dictfetchall(cursor)
         votes = int(votes[0]['votes'])
         votes = votes + 1
         cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+        cursor.execute("INSERT INTO Vote(review_id, username) VALUES (%s, %s)", [review_id, sess_user])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 def review_downvote(request, id):
     cursor = connection.cursor()
     review_id = id
+    sess_user = request.session.get('lazylogin', None)
+    print sess_user
     with connection.cursor() as cursor:
         cursor.execute("SELECT Review.votes FROM Review WHERE Review.review_id = %s", [review_id])
         votes = dictfetchall(cursor)
         votes = int(votes[0]['votes'])
         votes = votes - 1
         cursor.execute("UPDATE Review SET votes = %s WHERE review_id = %s", [votes, review_id])
+        cursor.execute("INSERT INTO Vote(review_id, username) VALUES (%s, %s)", [review_id, sess_user])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 

@@ -69,9 +69,14 @@
 				<td>{{ review.body }}</td>
 				<td>{{review.rating}}</td>
 				<td>{{ review.username }}</td>
-				<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
-				<td><a href="{% url 'review-upvote' %}" class="btn btn-default">Upvote</a></td>
-				<td><a href="{% url 'review-downvote' %}" class="btn btn-default">Downvote</a></td>
+				<td>{{review.votes}}</td>
+
+				{% if review.review_id in myreviews %}
+					<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
+				{% endif %}
+
+				<td><a href="{% url 'review-upvote' review.review_id %}" class="btn btn-default">Upvote</a></td>
+				<td><a href="{% url 'review-downvote' review.review_id %}" class="btn btn-default">Downvote</a></td>
 			</tr>
 		
 		{% endfor %}
