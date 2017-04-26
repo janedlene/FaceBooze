@@ -315,6 +315,8 @@ def deleteReview(request, id):
     review_id = id
     with connection.cursor() as cursor:
         sess_user = request.session.get('lazylogin', None)
+        cursor.execute("DELETE FROM Vote WHERE Vote.review_id = %s", [review_id])
+        cursor.execute("DELETE FROM has WHERE has.review_id = %s", [review_id])
         cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s AND wrote.username = %s", [review_id, sess_user])
         cursor.execute("INSERT INTO has(review_id, recipe_id) VALUES (%s, %s)", [review_id, recipe_id])
         cursor.execute("DELETE FROM Review WHERE Review.review_id = %s", [review_id])
