@@ -59,7 +59,7 @@
         <th>Body</th>
         <th>Rating</th>
         <th>User</th>
-        <th></th>
+        <th>Votes</th>
       </tr>
     </thead>
     <tbody>
@@ -70,6 +70,8 @@
 				<td>{{review.rating}}</td>
 				<td>{{ review.username }}</td>
 				<td><a href="{% url 'delete-review' review.review_id %}" class="btn btn-default">Delete</a></td>
+				<td><a href="{% url 'review-upvote' %}" class="btn btn-default">Upvote</a></td>
+				<td><a href="{% url 'review-downvote' %}" class="btn btn-default">Downvote</a></td>
 			</tr>
 		
 		{% endfor %}
