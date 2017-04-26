@@ -380,8 +380,6 @@ def ajax_search_recipe(request):
     context = {'query': query, 'isCustomer' : isCust, 'custHistory': history} 
     return render(request, '_recipes.html', context)
 
-'OR '
-
 
 def ajax_available_recipe(request):
     cursor = connection.cursor()
