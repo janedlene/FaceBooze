@@ -248,6 +248,7 @@ def sellRecipe(request):
     context = {'form': form}
     return render(request, 'sellRecipe.html', context)
 
+@login_required
 def editRecipe(request, id):
     cursor = connection.cursor()
     rid = id
@@ -298,6 +299,7 @@ def editRecipe(request, id):
     
     return render(request, 'editRecipe.html', context)
 
+@login_required
 def buyRecipe(request, id):
     cursor = connection.cursor()
     if not isCustomer(request.session.get('lazylogin', None)):
@@ -321,7 +323,6 @@ def buyRecipe(request, id):
     messages.success(request, 'Successfully purchased recipe!')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
-
 def isCustomer(username):
     cursor = connection.cursor()
     with connection.cursor() as cursor:
@@ -339,6 +340,7 @@ def dictfetchall(cursor):
         for row in cursor.fetchall()
     ]
 
+@login_required
 def cancelOrder(request, id):
     cursor = connection.cursor()
     recipe_id = id
@@ -347,6 +349,7 @@ def cancelOrder(request, id):
         cursor.execute("DELETE FROM purchase WHERE purchase.recipe_id = %s AND purchase.username = %s", [recipe_id, username])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@login_required
 def deleteReview(request, id):
     cursor = connection.cursor()
     review_id = id
@@ -359,6 +362,7 @@ def deleteReview(request, id):
         cursor.execute("DELETE FROM Review WHERE Review.review_id = %s", [review_id])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@login_required
 def editReview(request, id):
     cursor = connection.cursor()
     review_id = id
@@ -381,6 +385,7 @@ def editReview(request, id):
     context = {'form':form}
     return render(request, 'editReview.html', context)    
 
+@login_required
 def recipeDetails(request, id):
     cursor = connection.cursor()
     query = []
@@ -419,6 +424,7 @@ def recipeDetails(request, id):
 
     return render(request, 'recipeDetails.html', context)
 
+@login_required
 def review_upvote(request, id):
     cursor = connection.cursor()
     review_id = id
@@ -438,6 +444,7 @@ def review_upvote(request, id):
         
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
+@login_required
 def review_downvote(request, id):
     cursor = connection.cursor()
     review_id = id
@@ -476,7 +483,7 @@ def ajax_search_recipe(request):
     return render(request, '_recipes.html', context)
 
 
-
+@login_required
 def viewProfile(request):
     cursor = connection.cursor()
     query = []
@@ -489,7 +496,7 @@ def viewProfile(request):
     context = {'query' : query, 'customerinfo' : customerinfo}
     return render(request, 'profile.html', context)
 
-
+@login_required
 def viewSupplierProfile(request):
     cursor = connection.cursor()
     query = []
@@ -502,6 +509,7 @@ def viewSupplierProfile(request):
     context = {'query' : query, 'supplierinfo' : supplierinfo}
     return render(request, 'supplierProfile.html', context)
 
+@login_required
 def export_customer(request):
     sess_user = request.session.get('lazylogin', None)
     export_type = request.GET.get('export_type')
@@ -523,6 +531,7 @@ def export_customer(request):
     response['Content-Disposition'] = 'attachment; filename=' + filename
     return response
 
+@login_required
 def export_supplier(request):
     sess_user = request.session.get('lazylogin', None)
     export_type = request.GET.get('export_type')
