@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Profile</h1>
+    <h2> Hi {{ request.session.lazylogin }}</h2>
+    
+    {% for supplier in supplierinfo %}
+        <h3> Supplier name: <h3>
+        <h4> {{supplier.first_name}} {{supplier.last_name}} <h4>
+        
+        <h3> Address: </h3> 
+        <h4> {{supplier.street}} <h4> 
+        <h4> {{supplier.city}}, {{supplier.state}} {{supplier.zip_code}} <h4> 
+        
+        <h3> Email:  </h3> <h4> {{supplier.email}} </h4>
+        <h3> Phone Number: </h3> <h4> {{supplier.phone_number}} </h4>
+        
+    {% endfor %}
+
+<h2> Available Recipes: </h2>
+    
+<table class = "table table-striped">
+<thead>
+  <tr>
+    <th>Recipe Title</th>
+    <th>Price</th> 
+  </tr>
+  </thead>
+  <tbody>
+  {% for recipe in query %}
+  <tr>
+    <td> {{ recipe.title }}</td>
+    <td> {{ recipe.price }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
