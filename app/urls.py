@@ -9,7 +9,6 @@ urlpatterns = [
     url(r'^register/customer/$', views.customerRegister, name='customer-register'),
     url(r'^home/$', views.index, name='index'),
     url(r'^home/review/(?P<id>[0-9]+)/$', views.createReview, name='create-review'),
-    # url(r'^sellrecipe/$', views.sellRecipe, name='sell-recipe'),
     url(r'^customerhistory/$', views.customerHistory, name='customer-history'),
     url(r'^recipe/sell/$', views.sellRecipe, name='sell-recipe'),
 	url(r'^recipe/buy/(?P<id>[0-9]+)/$', views.buyRecipe, name='buy-recipe'),

@@ -1,13 +1,51 @@
 {% extends "base.html" %}
 
+{% load widget_tweaks %}|
+
 {% block content %}
 
-<h1>Sell a Recipe</h1>
-<form action="" method="post">
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Submit" />
-</form>
+<div class="container"><h1 style="margin-top:50px; text-align:center;">Create a Recipe to Sell</h1></div>
+
+<script type="text/javascript">
+	function addIngredient(){
+		form_count = Number($("[name=ingredient_count]").val());
+		//get extra form count so we know what index to use for the next item
+		//var ingredient = document.getElementbyId("#add_ingredient");
+		
+		//alert("form count is: " + form_count);
+		//build element and append it to our form
+		element = $('<input type="text"/>');
+		element.attr('name', 'ingredient_' + form_count);
+		br = $('<br>');
+		element.append(br);
+		$("#rForm").append(element);
+		form_count++;
+		$("[name=ingredient_count]").val(form_count);
+	}
+	
+
+</script>
 
 
+<div style="margin-left:400px; margin-right:400px; margin-top:25px; margin-bottom:50px; text-align:center;">
+	<form action="" method="post">
+		<div id = "rForm">
+    		{% csrf_token %}
+    		{% for field in form %}
+	    		<div class="form-group">
+					<div class="col-md-3">
+					{% if not field.label == "Ingredient Count" %}
+		            	<label class="control-label form-label" for="id_{{ field.name }}">{{ field.label }}</label>: 	
+					{% endif %}
+		            </div>
+		            <div class="col-md-9">
+		            	{{ field | add_class:"form-control"}}
+		            </div>
+		    	</div>
+			{% endfor %}
+		</div>
+		<button style="margin-top:15px; margin-bottom:15px;" class="btn btn-success" id="add_ingredient" onclick="addIngredient()">Add Ingredient</button>
+		<input style="margin-top:15px; margin-bottom:15px;" class="btn btn-primary" type="submit" name="submit" value="Create Recipe" />
+	</form>
+</div>
 {% endblock %}
