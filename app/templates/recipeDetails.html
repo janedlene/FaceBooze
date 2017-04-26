@@ -41,7 +41,7 @@
 	<ul>
 	{% for ingredient in ingredients %}
 		
-		<li>{{ingredient.quantity}} {{ingredient.name}}</li>
+		<li>{% if not ingredients.quantity == NULL %} {{ingredient.quantity}} {% endif %} {{ingredient.name}}</li>
 
 	{% endfor %}
 	</ul>
