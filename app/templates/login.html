@@ -13,7 +13,7 @@
 
 	<ul class="nav nav-tabs">
 		<li class="active" style="width:50%; text-align:center;">
-        	<a href="#customer" data-toggle="tab">Customer Login</a>
+        	<a href="#consumer" data-toggle="tab">Consumer Login</a>
 		</li>
 		<li style="width:50%; text-align:center;">
 			<a href="#supplier" data-toggle="tab">Supplier Login</a>
@@ -21,7 +21,7 @@
 	</ul>
 
 	<div class="tab-content">
-		<div class="tab-pane active" id="customer">
+		<div class="tab-pane active" id="consumer">
 			<div style="margin-left:300px; margin-right:300px; margin-top:50px; margin-bottom:50px; text-align:center;">
 				<form action="" method="post">
 				    {% csrf_token %}
@@ -35,10 +35,10 @@
 		                    </div>
 		            	</div>
 	            	{% endfor %}
-				    <input style="margin-top:15px; margin-bottom:15px; width:50%;" class="btn btn-primary" type="submit" name="submit" value="Customer Login" />
+				    <input style="margin-top:15px; margin-bottom:15px; width:50%;" class="btn btn-primary" type="submit" name="submit" value="Consumer Login" />
 				</form>
 				Don't have an account?
-				<a href="{% url 'customer-register' %}">Customer Sign Up</a>
+				<a href="{% url 'consumer-register' %}">Consumer Sign Up</a>
 			</div>
 		</div>
 		<div class="tab-pane" id="supplier" >
