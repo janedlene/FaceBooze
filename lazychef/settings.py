@@ -52,7 +52,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'lazychef.urls'
+ROOT_URLCONF = 'facebooze.urls'
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'lazychef.wsgi.application'
+WSGI_APPLICATION = 'facebooze.wsgi.application'
 
 
 # Database
