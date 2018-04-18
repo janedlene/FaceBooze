@@ -17,7 +17,11 @@ class SupplierForm(forms.Form):
 	city = forms.CharField(label='City', max_length=50)
 	state = forms.CharField(label='State', max_length=2)
 	zip_code = forms.IntegerField(label='Zip Code')
-
+class ConsumerForm(forms.Form):
+	username = forms.CharField(label='Username', max_length=30)
+	password = forms.CharField(label='Password', max_length=100, widget=forms.PasswordInput)
+	confirm_pass = forms.CharField(label='Confirm Password', max_length=100, widget=forms.PasswordInput)
+	email = forms.EmailField(label='Email')
 class CustomerForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)
 	password = forms.CharField(label='Password', max_length=100, widget=forms.PasswordInput)

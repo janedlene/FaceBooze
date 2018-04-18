@@ -9,7 +9,7 @@ import xmlrpclib
 import json
 import datetime
 
-from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
+from .forms import SupplierForm, ConsumerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
 
 def login_required(f):
     def wrap(request, *args, **kwargs):
@@ -61,55 +61,48 @@ def login(request):
     context = {'form': form}
     return render(request, 'login.html', context)
 
-def customerRegister(request):
+def consumerRegister(request):
     # if logged in redirect to home
     if request.session.get('lazylogin', None) != None:
         return HttpResponseRedirect(reverse('index'))
     cursor = connection.cursor()
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
-        form = CustomerForm(request.POST)
+        form = ConsumerForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
             pass1 = form.cleaned_data['password']
             pass2 = form.cleaned_data['confirm_pass']
             if pass1 != pass2:
                 messages.error(request, "Passwords do not match")
-                return HttpResponseRedirect(reverse('customer-register'))
+                return HttpResponseRedirect(reverse('consumer-register'))
             password = hashers.make_password(form.cleaned_data['password'])
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
             email = form.cleaned_data['email']
-            phone_number = form.cleaned_data['phone_number']
-            street = form.cleaned_data['street']
-            city = form.cleaned_data['city']
-            state = form.cleaned_data['state']
-            zip_code = form.cleaned_data['zip_code']
-            customer = [username, password, first_name, last_name, email, phone_number, street, city, state, zip_code]
+            consumer = [username, password,  email]
             with connection.cursor() as cursor:
-                cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
+                cursor.execute("SELECT username FROM Consumer WHERE username = %s", [username])
                 data = cursor.fetchall()
                 if len(data) > 0:
                     messages.error(request, "Username is already taken.")
-                    return HttpResponseRedirect(reverse('customer-register'))
+                    return HttpResponseRedirect(reverse('consumer-register'))
                 cursor.execute("SELECT username FROM Supplier WHERE username = %s", [username])
                 data = cursor.fetchall()
                 if len(data) > 0:
                     messages.error(request, "Username is already taken.")
-                    return HttpResponseRedirect(reverse('customer-register'))
-                cursor.execute("SELECT username FROM Customer WHERE email = %s", [email])
+                    return HttpResponseRedirect(reverse('consumer-register'))
+                cursor.execute("SELECT username FROM Consumer WHERE email = %s", [email])
                 data = cursor.fetchall()
                 if len(data) > 0:
                     messages.error(request, "Email is already taken.")
-                    return HttpResponseRedirect(reverse('customer-register'))
-                cursor.execute("INSERT INTO Customer(username, password, first_name, last_name, email, phone_number, street, city, state, zip_code) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", customer)
+                    return HttpResponseRedirect(reverse('consumer-register'))
+                cursor.execute("INSERT INTO Consumer(username, password, email) VALUES (%s, %s, %s)", consumer)
             messages.success(request, 'Successfully registered!')
             return HttpResponseRedirect(reverse('login'))
         else:
             messages.error(request, 'Must fill out all fields')
-    form = CustomerForm()
+    form = ConsumerForm()
     context = {'form': form}
-    return render(request, 'customerRegister.html', context)
+    return render(request, 'consumerRegister.html', context)
 
 def supplierRegister(request):
     # if logged in redirect to home
