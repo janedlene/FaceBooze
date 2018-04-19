@@ -76,7 +76,7 @@ def consumerRegister(request):
             consumer = [str(10), username, datetime.datetime.now()]
            # c_id_iterator = c_id_iterator + 1
             with connection.cursor() as cursor:
-                cursor.execute("SELECT username FROM consumer WHERE username = %s", [username])
+                cursor.execute("SELECT c_name FROM consumer WHERE c_name = %s", [username])
                 data = cursor.fetchall()
                 if len(data) > 0:
                     messages.error(request, "Username is already taken.")
