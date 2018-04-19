@@ -79,11 +79,11 @@ WSGI_APPLICATION = 'facebooze.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cs4750s17cyt3ea',
-        'USER': 'cs4750s17cyt3ea',
-        'PASSWORD': 'teamlazychef',
-        'HOST': 'stardock.cs.virginia.edu',
-        'PORT': '',
+        'NAME': 'facebooze',
+        'USER': 'faceboozeclient',
+        'PASSWORD': 'asdf1234',
+        'HOST': 'ec2-18-220-47-24.us-east-2.compute.amazonaws.com',
+        'PORT': '3306',
     }
 }
 
