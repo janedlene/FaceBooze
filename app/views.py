@@ -8,7 +8,8 @@ from django.core import serializers
 import xmlrpclib
 import json
 import datetime
-
+import time 
+time.strftime('%Y-%m-%d %H:%M:%S')
 from .forms import SupplierForm, ConsumerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
 
 def login_required(f):
@@ -70,32 +71,17 @@ def consumerRegister(request):
     if request.method == 'POST':
         form = ConsumerForm(request.POST)
         if form.is_valid():
+            
             username = form.cleaned_data['username']
-            pass1 = form.cleaned_data['password']
-            pass2 = form.cleaned_data['confirm_pass']
-            if pass1 != pass2:
-                messages.error(request, "Passwords do not match")
-                return HttpResponseRedirect(reverse('consumer-register'))
-            password = hashers.make_password(form.cleaned_data['password'])
-            email = form.cleaned_data['email']
-            consumer = [username, password,  email]
+            consumer = [str(10), username, datetime.datetime.now()]
+           # c_id_iterator = c_id_iterator + 1
             with connection.cursor() as cursor:
-                cursor.execute("SELECT username FROM Consumer WHERE username = %s", [username])
+                cursor.execute("SELECT username FROM consumer WHERE username = %s", [username])
                 data = cursor.fetchall()
                 if len(data) > 0:
                     messages.error(request, "Username is already taken.")
                     return HttpResponseRedirect(reverse('consumer-register'))
-                cursor.execute("SELECT username FROM Supplier WHERE username = %s", [username])
-                data = cursor.fetchall()
-                if len(data) > 0:
-                    messages.error(request, "Username is already taken.")
-                    return HttpResponseRedirect(reverse('consumer-register'))
-                cursor.execute("SELECT username FROM Consumer WHERE email = %s", [email])
-                data = cursor.fetchall()
-                if len(data) > 0:
-                    messages.error(request, "Email is already taken.")
-                    return HttpResponseRedirect(reverse('consumer-register'))
-                cursor.execute("INSERT INTO Consumer(username, password, email) VALUES (%s, %s, %s)", consumer)
+                cursor.execute("INSERT INTO consumer(c_id, c_name, c_join_date) VALUES (%s, %s, %s)", consumer)
             messages.success(request, 'Successfully registered!')
             return HttpResponseRedirect(reverse('login'))
         else:
