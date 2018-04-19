@@ -4,7 +4,8 @@ from decimal import Decimal
 class LoginForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)
 #	password = forms.CharField(label='Password', max_length=100, widget=forms.PasswordInput)	
-
+class SearchDrinkForm(forms.Form):
+	search_string = forms.CharField(label='Search Value', max_length=30)
 class SupplierForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)
 	password = forms.CharField(label='Password', max_length=100, widget=forms.PasswordInput)
