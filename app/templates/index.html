@@ -48,39 +48,20 @@
 		<div class="col-md-6">
 			<h1>Welcome {{ request.session.lazylogin }}</h1>
 		</div>
-		<div class="col-md-6">
-			{% if not isCustomer %}
-				<h1><a href="{% url 'sell-recipe' %}" class="btn btn-success" style="float:right;">Create Recipe</a></h1>
-			{% endif %}
-		</div>
-	</div>
-	<br>
+  </div>
+  
+  <br>
 
-	<div>
-		<input id=”q” class="form-control" name="search" placeholder="Search for recipe..." type=”text”/>
-	</div>
+  <div>
+      <form action="" method="post">  
+          {% csrf_token %}                                          
+          <input id=”drink_search” class="form-control" name="searchdrinks" placeholder="Search for a new drink" type=”text”/>
+          <button type="submit" href="{% url 'searchdrinks' %}">Submit</button>
+       </form>
+  </div>
 
-	<br>
-
-	{% include '_recipes.html' %}
+	{% include '_favorites.html' %}
 </div>
 
-<script>
-	$( document ).ready(function() {
-		console.log("Document is ready");
-		$('input[name=search]').on('input',function(e){ 
-			$.ajax({
-		        url: '/ajax/search/recipe',
-		        data: {
-		          'q': $(this).val()
-		        },
-		        success: function (data) {
-		        	$( "#recipe-table" ).replaceWith( data );
-		        }
-		    }); 
-
-		});
-	});
-</script>
 
 {% endblock %}

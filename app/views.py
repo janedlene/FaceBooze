@@ -42,8 +42,9 @@ def login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             user = [username]
-            if request.POST.get('submit', None) == 'Customer Login':
-                cursor.execute("SELECT password FROM consumer WHERE c_name = %s", user)
+            cursor.execute("SELECT c_name FROM consumer WHERE c_name = %s", user)
+            query = cursor.fetchone()
+            if query:
                 request.session["lazylogin"] = username
                 messages.success(request, 'Successfully logged in')
                 return HttpResponseRedirect(reverse('index'))
@@ -139,24 +140,40 @@ def supplierRegister(request):
     form = SupplierForm()
     context = {'form': form}
     return render(request, 'supplierRegister.html', context)
-
+@login_required
+def search_drinks(request):
+    print("Hello World!!!!!")
+    cursor = connection.cursor()
+    query=[]
+    with connection.cursor() as cursor:
+        cursor.execute("select d_name,d_abv,p_name \
+        from facebooze.drink natural join facebooze.producer")
+        #, [request.session.get('lazylogin', None)])
+        query = dictfetchall(cursor)
+        print(query)
+    context = {'query': query}
+    return render(request, 'searchDrinks.html', context)
 @login_required
 def index(request):
-    cursor = connection.cursor()
-    query = []
-    customerPurchases = []
-    with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM Recipe")
-        query = dictfetchall(cursor)
-        cursor.execute("SELECT recipe_id FROM purchase WHERE username = %s", [request.session.get('lazylogin', None)])
-        customerPurchases = cursor.fetchall()
-    isCust = isCustomer(request.session.get('lazylogin', None))
-    history = []
-    for purchase in customerPurchases:
-        history.append(purchase[0])
-    context = {'isCustomer': isCust, 'query': query, 'custHistory': history}
-    return render(request, 'index.html', context)
+    if request.method == 'POST':
+        print("hi")
+        return HttpResponseRedirect(reverse('searchdrinks'))
+    else:
+        cursor = connection.cursor()
+        query=[]
+        with connection.cursor() as cursor:
+            cursor.execute("select d_name,d_abv from facebooze.consumer natural join favorites natural join drink where c_name= %s", [request.session.get('lazylogin', None)])
+            query = dictfetchall(cursor)
+        context = {'query': query}
+        return render(request, 'index.html', context)
 
+def dictfetchall(cursor):
+    "Return all rows from a cursor as a dict"
+    columns = [col[0] for col in cursor.description]
+    return [
+        dict(zip(columns, row))
+        for row in cursor.fetchall()
+    ]
 
 @login_required
 def createReview(request, id):
@@ -311,13 +328,6 @@ def isCustomer(username):
             return True
     return False
 
-def dictfetchall(cursor):
-    "Return all rows from a cursor as a dict"
-    columns = [col[0] for col in cursor.description]
-    return [
-        dict(zip(columns, row))
-        for row in cursor.fetchall()
-    ]
 
 @login_required
 def cancelOrder(request, id):

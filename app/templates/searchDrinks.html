@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+
+{% block content %}
+
+
+<table class="table table-striped" id="favorites-table">
+        <thead>
+          <tr>
+            <th>Drink Name</th>
+            <th>Drink Alcohol By Volume</th>
+            <th>Drink Producer</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for item in query %}
+                <tr>
+                    <td>{{ item.d_name }}</td>
+                    <td>{{ item.d_abv }}</td>
+                    <td>{{ item.p_name }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+</table>
+{% endblock %}
