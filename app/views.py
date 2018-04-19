@@ -1,16 +1,20 @@
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.db import connection
+import sys
 from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.contrib.auth import hashers
 from django.core import serializers
-import xmlrpclib
+if sys.version_info[0] < 3:
+    import xmlrpclib
+else:
+    from xmlrpc import client as xmlrpclib
 import json
 import datetime
 import time 
 time.strftime('%Y-%m-%d %H:%M:%S')
-from .forms import SupplierForm, ConsumerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
+from .forms import SupplierForm, SearchDrinkForm, ConsumerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
 
 def login_required(f):
     def wrap(request, *args, **kwargs):
@@ -42,10 +46,12 @@ def login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             user = [username]
-            cursor.execute("SELECT c_name FROM consumer WHERE c_name = %s", user)
-            query = cursor.fetchone()
+            cursor.execute("SELECT c_id, c_name FROM consumer WHERE c_name = %s", user)
+            query = dictfetchall(cursor)
+            dat_user = query[0]
             if query:
-                request.session["lazylogin"] = username
+                request.session["lazylogin"] = dat_user['c_name']
+                request.session["lazycid"] = dat_user['c_id']
                 messages.success(request, 'Successfully logged in')
                 return HttpResponseRedirect(reverse('index'))
             messages.error(request, 'Incorrect username/password')
@@ -72,9 +78,7 @@ def consumerRegister(request):
     if request.method == 'POST':
         form = ConsumerForm(request.POST)
         if form.is_valid():
-            
             username = form.cleaned_data['username']
-            consumer = [str(10), username, datetime.datetime.now()]
            # c_id_iterator = c_id_iterator + 1
             with connection.cursor() as cursor:
                 cursor.execute("SELECT c_name FROM consumer WHERE c_name = %s", [username])
@@ -82,6 +86,10 @@ def consumerRegister(request):
                 if len(data) > 0:
                     messages.error(request, "Username is already taken.")
                     return HttpResponseRedirect(reverse('consumer-register'))
+                cursor.execute('SELECT MAX(c_id) as max FROM consumer')
+                result = dictfetchall(cursor)
+                new_id = int(result[0]['max'])+1
+                consumer = [str(new_id), username, datetime.datetime.now()]
                 cursor.execute("INSERT INTO consumer(c_id, c_name, c_join_date) VALUES (%s, %s, %s)", consumer)
             messages.success(request, 'Successfully registered!')
             return HttpResponseRedirect(reverse('login'))
@@ -141,30 +149,63 @@ def supplierRegister(request):
     context = {'form': form}
     return render(request, 'supplierRegister.html', context)
 @login_required
+def removeFromFavorites(request, d_id):
+    cursor = connection.cursor()
+    drink_id = d_id
+    c_id = request.session.get('lazycid', None)
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT c_id, d_id FROM favorites WHERE c_id = %s AND d_id = %s", [c_id,drink_id])
+        data = cursor.fetchall()
+        if len(data) == 0:
+            messages.error(request, "This drink is not in your favorites.")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        cursor.execute("DELETE FROM favorites where c_id=%s AND d_id=%s", [c_id,drink_id])
+    messages.success(request, 'Successfully deleted favorite!')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+@login_required
+def addToFavorites(request, d_id):
+    cursor = connection.cursor()
+    drink_id = d_id
+    c_id = request.session.get('lazycid', None)
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT c_id, d_id FROM favorites WHERE c_id = %s AND d_id = %s", [c_id,drink_id])
+        data = cursor.fetchall()
+        if len(data) > 0:
+            messages.success(request, "This drink is already in your favorites.")
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        cursor.execute("INSERT INTO favorites(c_id, d_id) VALUES (%s, %s)", [c_id,drink_id])
+    messages.success(request, 'Successfully added favorite!')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+@login_required
 def search_drinks(request):
-    print("Hello World!!!!!")
+    search_text = request.POST.get("search_string", "")
+    print(search_text)
     cursor = connection.cursor()
     query=[]
     with connection.cursor() as cursor:
-        cursor.execute("select d_name,d_abv,p_name \
+        cursor.execute("select d_id,d_name,p_name \
         from facebooze.drink natural join facebooze.producer")
         #, [request.session.get('lazylogin', None)])
         query = dictfetchall(cursor)
-        print(query)
     context = {'query': query}
-    return render(request, 'searchDrinks.html', context)
+    return render(request, 'searchResults.html', context)
 @login_required
 def index(request):
+    cursor = connection.cursor()
     if request.method == 'POST':
-        print("hi")
-        return HttpResponseRedirect(reverse('searchdrinks'))
+        form = SearchDrinkForm(request.POST)
+        search=''
+        if form.is_valid():
+            search = form.cleaned_data['search_string']
+        print(search)
+        return HttpResponseRedirect(reverse('search-results'))
     else:
-        cursor = connection.cursor()
         query=[]
+        form = SearchDrinkForm()
         with connection.cursor() as cursor:
-            cursor.execute("select d_name,d_abv from facebooze.consumer natural join favorites natural join drink where c_name= %s", [request.session.get('lazylogin', None)])
+            cursor.execute("select d_name,d_abv,d_id from facebooze.consumer natural join favorites natural join drink where c_name= %s", [request.session.get('lazylogin', None)])
             query = dictfetchall(cursor)
-        context = {'query': query}
+        context = {'query': query, 'form':form}
         return render(request, 'index.html', context)
 
 def dictfetchall(cursor):

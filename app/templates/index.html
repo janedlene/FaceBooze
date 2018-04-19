@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
-{% load staticfiles %}
+{% load widget_tweaks %}|
 
 {% block content %}
+
+{% load static %}
 
 <div id="myCarousel" class="carousel slide" data-ride="carousel">
   <!-- Indicators -->
@@ -53,11 +55,20 @@
   <br>
 
   <div>
-      <form action="" method="post">  
-          {% csrf_token %}                                          
-          <input id=”drink_search” class="form-control" name="searchdrinks" placeholder="Search for a new drink" type=”text”/>
-          <button type="submit" href="{% url 'searchdrinks' %}">Submit</button>
-       </form>
+    <form action="" method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <div class="col-md-3">
+                  <label class="control-label form-label" for="id_{{ field.name }}">{{ field.label }}</label>:
+                </div>
+                <div class="col-md-9">
+                    {{ field | add_class:"form-control"}}
+                </div>
+            </div>
+          {% endfor %}
+      <input style="margin-top:15px; margin-bottom:15px; width:50%;" class="btn btn-primary" type="submit" name="submit" value="Search for Drinks" />
+  </form>
   </div>
 
 	{% include '_favorites.html' %}
