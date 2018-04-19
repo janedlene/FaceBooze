@@ -178,35 +178,34 @@ def addToFavorites(request, d_id):
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 @login_required
 def search_drinks(request):
-    search_text = request.POST.get("search_string", "")
-    print(search_text)
-    cursor = connection.cursor()
+    form=[]
     query=[]
-    with connection.cursor() as cursor:
-        cursor.execute("select d_id,d_name,p_name \
-        from facebooze.drink natural join facebooze.producer")
-        #, [request.session.get('lazylogin', None)])
-        query = dictfetchall(cursor)
-    context = {'query': query}
+    if request.method == 'POST':
+        form = SearchDrinkForm(request.POST)
+        if form.is_valid():
+            search = form.cleaned_data['search_string']
+            print(search)
+            with connection.cursor() as cursor:
+                cursor.execute("select d_id,d_name,p_name \
+                from facebooze.drink natural join facebooze.producer")
+                query = dictfetchall(cursor)
+    else:
+        form = SearchDrinkForm()
+        with connection.cursor() as cursor:
+            cursor.execute("select d_id,d_name,p_name \
+            from facebooze.drink natural join facebooze.producer")
+            query = dictfetchall(cursor)
+    context = {'query': query, 'form': form}
     return render(request, 'searchResults.html', context)
 @login_required
 def index(request):
     cursor = connection.cursor()
-    if request.method == 'POST':
-        form = SearchDrinkForm(request.POST)
-        search=''
-        if form.is_valid():
-            search = form.cleaned_data['search_string']
-        print(search)
-        return HttpResponseRedirect(reverse('search-results'))
-    else:
-        query=[]
-        form = SearchDrinkForm()
-        with connection.cursor() as cursor:
-            cursor.execute("select d_name,d_abv,d_id from facebooze.consumer natural join favorites natural join drink where c_name= %s", [request.session.get('lazylogin', None)])
-            query = dictfetchall(cursor)
-        context = {'query': query, 'form':form}
-        return render(request, 'index.html', context)
+    query=[]
+    with connection.cursor() as cursor:
+        cursor.execute("select d_name,d_abv,d_id from facebooze.consumer natural join favorites natural join drink where c_name= %s", [request.session.get('lazylogin', None)])
+        query = dictfetchall(cursor)
+    context = {'query': query}
+    return render(request, 'index.html', context)
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
