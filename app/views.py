@@ -41,21 +41,21 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
             user = [username]
             if request.POST.get('submit', None) == 'Customer Login':
-                cursor.execute("SELECT password FROM Customer WHERE username = %s", user)
-            else:
-                cursor.execute("SELECT password FROM Supplier WHERE username = %s", user)
-            query = cursor.fetchone()
+                cursor.execute("SELECT password FROM consumer WHERE c_name = %s", user)
+                request.session["lazylogin"] = username
+                messages.success(request, 'Successfully logged in')
+                return HttpResponseRedirect(reverse('index'))
+            messages.error(request, 'Incorrect username/password')
+            return HttpResponseRedirect(reverse('login'))
+            '''query = cursor.fetchone()
             if query:
                 query = query[0]
                 if hashers.check_password(password, query):
                     request.session["lazylogin"] = username
                     messages.success(request, 'Successfully logged in')
-                    return HttpResponseRedirect(reverse('index'))
-            messages.error(request, 'Incorrect username/password')
-            return HttpResponseRedirect(reverse('login'))
+                    return HttpResponseRedirect(reverse('index'))'''
         else:
             messages.error(request, 'Must fill out all fields')
     form = LoginForm()

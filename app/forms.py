@@ -3,7 +3,7 @@ from decimal import Decimal
 
 class LoginForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)
-	password = forms.CharField(label='Password', max_length=100, widget=forms.PasswordInput)	
+#	password = forms.CharField(label='Password', max_length=100, widget=forms.PasswordInput)	
 
 class SupplierForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)
@@ -19,7 +19,7 @@ class SupplierForm(forms.Form):
 	zip_code = forms.IntegerField(label='Zip Code')
 class ConsumerForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)
-	email = forms.EmailField(label='Email')
+#	email = forms.EmailField(label='Email')
 
 class ReviewForm(forms.Form):
     title = forms.CharField(label='Title', max_length=200)
