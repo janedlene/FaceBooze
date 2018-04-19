@@ -12,11 +12,9 @@ class SupplierForm(forms.Form):
 	org_name = forms.CharField(label='Organization name', max_length=100)
 	email = forms.EmailField(label='Email')
 	phone_number = forms.IntegerField(label='Phone Number')
-	website = forms.CharField(label='Website', max_length=100)
-	street = forms.CharField(label='Street', max_length=50)
-	city = forms.CharField(label='City', max_length=50)
-	state = forms.CharField(label='State', max_length=2)
-	zip_code = forms.IntegerField(label='Zip Code')
+	address = forms.CharField(label='Location', max_length=300)
+	user_type = forms.ChoiceField((('P','Producer'), ('R','Retailer')), label="Account Type")
+	business_type = forms.CharField(label='Business Type', max_length=45)
 
 class CustomerForm(forms.Form):
 	username = forms.CharField(label='Username', max_length=30)

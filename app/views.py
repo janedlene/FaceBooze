@@ -130,29 +130,37 @@ def supplierRegister(request):
             org_name = form.cleaned_data['org_name']
             email = form.cleaned_data['email']
             phone_number = form.cleaned_data['phone_number']
-            website = form.cleaned_data['website']
-            street = form.cleaned_data['street']
-            city = form.cleaned_data['city']
-            state = form.cleaned_data['state']
-            zip_code = form.cleaned_data['zip_code']
-            supplier = [username, password, org_name, email, phone_number, website, street, city, state, zip_code]
+            acct_type = form.cleaned_data['user_type']
+            tableName = 'retailer' if acct_type == 'R' else 'producer'
+            address = form.cleaned_data['address']
+            business_type = form.cleaned_data['business_type']
+            supplier = [username, password, org_name, email, phone_number, address, business_type]
             with connection.cursor() as cursor:
-                cursor.execute("SELECT username FROM Supplier WHERE username = %s", [username])
-                data = cursor.fetchall()
-                if len(data) > 0:
-                    messages.error(request, "Username is already taken.")
-                    return HttpResponseRedirect(reverse('supplier-register'))
-                cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
-                data = cursor.fetchall()
-                if len(data) > 0:
-                    messages.error(request, "Username is already taken.")
-                    return HttpResponseRedirect(reverse('supplier-register'))
-                cursor.execute("SELECT username FROM Supplier WHERE email = %s", [email])
-                data = cursor.fetchall()
-                if len(data) > 0:
-                    messages.error(request, "Email is already taken.")
-                    return HttpResponseRedirect(reverse('supplier-register'))
-                cursor.execute("INSERT INTO Supplier(username, password, org_name, email, phone_number, website, street, city, state, zip_code) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", supplier)
+                # cursor.execute("SELECT username FROM " + tableName + " WHERE username = %s", [username])
+                # data = cursor.fetchall()
+                # if len(data) > 0:
+                #     messages.error(request, "Username is already taken.")
+                #     return HttpResponseRedirect(reverse('supplier-register'))
+                #TODO put username, password stuff back in
+                if tableName == 'retailer':
+                    cursor.execute("SELECT r_id FROM " + tableName + " WHERE r_email = %s", [email])
+                    data = cursor.fetchall()
+                    if len(data) > 0:
+                        messages.error(request, "Email is already taken.")
+                        return HttpResponseRedirect(reverse('supplier-register'))
+                    cursor.execute("SELECT max(r_id) FROM retailer")
+                    id_no = cursor.fetchall()[0][0] + 1
+                    cursor.execute("INSERT INTO retailer(r_id, r_name, r_email, r_phone, r_location, r_type) VALUES (%s, %s, %s, %s, %s, %s)", [id_no] + supplier[2:])
+                else:
+                    cursor.execute("SELECT p_id FROM " + tableName + " WHERE p_email = %s", [email])
+                    data = cursor.fetchall()
+                    if len(data) > 0:
+                        messages.error(request, "Email is already taken.")
+                        return HttpResponseRedirect(reverse('supplier-register'))
+                    cursor.execute("SELECT max(p_id) FROM producer")
+                    id_no = cursor.fetchall()[0][0] + 1
+                    cursor.execute("INSERT INTO producer(p_id, p_name, p_email, p_phone, p_location, p_type) VALUES (%s, %s, %s, %s, %s, %s)", [id_no] + supplier[2:])
+
             messages.success(request, 'Successfully registered!')
             return HttpResponseRedirect(reverse('login'))
         else:
