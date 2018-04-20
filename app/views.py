@@ -186,8 +186,9 @@ def search_drinks(request):
             search = form.cleaned_data['search_string']
             print(search)
             with connection.cursor() as cursor:
-                cursor.execute("select d_id,d_name,p_name \
-                from facebooze.drink natural join facebooze.producer")
+                cursor.execute("select * \
+                from (facebooze.drink natural join facebooze.producer) \
+                WHERE d_name LIKE %s OR p_name LIKE %s OR  d_name LIKE %s OR p_name LIKE %s;",[search+"%",search+"%","%" + search,"%" + search])
                 query = dictfetchall(cursor)
     else:
         form = SearchDrinkForm()
