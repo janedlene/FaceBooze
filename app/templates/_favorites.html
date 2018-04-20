@@ -2,7 +2,7 @@
     <thead>
       <tr>
         <th>Drink Name</th>
-        <th>Drink Alcohol By Volume</th>
+        <th>Produced By</th>
         <th>Delete From Favorites</th>
       </tr>
     </thead>
@@ -10,7 +10,7 @@
 		{% for item in query %}
 			<tr>
 				<td>{{ item.d_name }}</td>
-				<td>{{ item.d_abv }}</td>
+				<td>{{ item.p_name }}</td>
         <td><a href="{% url 'delete-from-favorites' item.d_id %}" class="btn btn-primary">Delete From Favorites</a></td>
 			</tr>
 		{% endfor %}

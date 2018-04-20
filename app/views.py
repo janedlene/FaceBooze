@@ -205,7 +205,9 @@ def index(request):
     cursor = connection.cursor()
     query=[]
     with connection.cursor() as cursor:
-        cursor.execute("select d_name,d_abv,d_id from facebooze.consumer natural join favorites natural join drink where c_name= %s", [request.session.get('lazylogin', None)])
+        cursor.execute("select * from \
+        (facebooze.consumer natural join facebooze.favorites natural join facebooze.drink natural join facebooze.producer)\
+         where c_name= %s", [request.session.get('lazylogin', None)])
         query = dictfetchall(cursor)
     context = {'query': query}
     return render(request, 'index.html', context)
