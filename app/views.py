@@ -262,6 +262,7 @@ def retailer_profile(request, r_id):
     context = {'query': query, 'producer': producer, 'allow_edit': isOwner}
     return render(request, 'retailerProfile.html', context)
 
+
 @login_required
 def retailer_add_stock(request):
     context = {}
@@ -278,6 +279,19 @@ def retailer_add_stock(request):
             return HttpResponseRedirect(reverse('index'))
 
     return render(request, 'genericForm.html', context=context)
+
+
+@login_required
+def retailer_delete_stock(request, d_id):
+    uname = request.session['uname']
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT d_id FROM retail_inv WHERE d_id=%s AND r_username=%s", [d_id, uname])
+        if len(cursor.fetchall()) != 1:
+            return HttpResponseForbidden()
+        cursor.execute("DELETE FROM retail_inv WHERE d_id=%s AND r_username=%s", [d_id, uname])
+
+    return HttpResponseRedirect(reverse('index'))
+
 
 
 def dictfetchall(cursor):

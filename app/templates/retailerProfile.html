@@ -55,7 +55,7 @@
                 <td>{{ item.d_name }}</td>
                 <td>{{ item.quantity }}</td>
                 {% if allow_edit %}
-                <td>X</td>
+                <td><a href="{% url 'retailer-delete-inv' item.d_id %}">X</a></td>
                 {% endif %}
             </tr>
             {% endfor %}
