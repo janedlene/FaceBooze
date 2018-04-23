@@ -81,18 +81,22 @@ def consumerRegister(request):
         form = ConsumerForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
+            name = form.cleaned_data['name'] 
+            password = form.cleaned_data['password'] 
+            confirm_password = form.cleaned_data['confirm_password'] 
            # c_id_iterator = c_id_iterator + 1
             with connection.cursor() as cursor:
-                cursor.execute("SELECT c_name FROM consumer WHERE c_name = %s", [username])
+                cursor.execute("SELECT c_username FROM consumer WHERE c_username = %s", [username])
                 data = cursor.fetchall()
                 if len(data) > 0:
                     messages.error(request, "Username is already taken.")
                     return HttpResponseRedirect(reverse('consumer-register'))
-                cursor.execute('SELECT MAX(c_id) as max FROM consumer')
-                result = dictfetchall(cursor)
-                new_id = int(result[0]['max'])+1
-                consumer = [str(new_id), username, datetime.datetime.now()]
-                cursor.execute("INSERT INTO consumer(c_id, c_name, c_join_date) VALUES (%s, %s, %s)", consumer)
+                if password != confirm_password:
+                    messages.error(request, "Password doesn't match confirm password.")
+                    return HttpResponseRedirect(reverse('consumer-register'))
+                consumer = [name, username, password, datetime.datetime.now()]
+                cursor.execute("INSERT INTO consumer(c_name, c_username, c_password, c_join_date) \
+                VALUES (%s, %s, %s, %s)", consumer)
             messages.success(request, 'Successfully registered!')
             return HttpResponseRedirect(reverse('login'))
         else:
