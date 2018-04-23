@@ -14,8 +14,8 @@ import json
 import datetime
 import time 
 time.strftime('%Y-%m-%d %H:%M:%S')
-from .forms import SupplierForm, SearchDrinkForm, ConsumerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
-
+from .forms import SearchDrinkForm, ConsumerForm, LoginForm
+   
 def login_required(f):
     def wrap(request, *args, **kwargs):
         # try authenticating the user
