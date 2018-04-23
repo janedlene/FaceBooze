@@ -196,8 +196,9 @@ def search_drinks(request):
                 cursor.execute("select * \
                 from facebooze.drink natural join facebooze.producer \
                 WHERE MATCH (d_name) AGAINST (%s IN NATURAL LANGUAGE MODE) \
+                or MATCH (p_location) AGAINST (%s IN NATURAL LANGUAGE MODE) \
                 or MATCH (p_name) AGAINST (%s IN NATURAL LANGUAGE MODE);" \
-                ,[search,search])
+                ,[search,search,search])
                 query = dictfetchall(cursor)
     else:
         form = SearchDrinkForm()
