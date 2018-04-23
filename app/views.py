@@ -318,6 +318,14 @@ def search(request):
     context = {'query': query, 'form': form}
     return render(request, 'searchResults.html', context)
 
+def favorites(request):
+    with connection.cursor() as cursor:
+        cursor.execute('SELECT d_id, d_name, p_username, p_name, fav_count FROM (SELECT d_id, count(c_username) AS fav_count FROM favorites GROUP BY d_id) as favs NATURAL JOIN drink NATURAL JOIN producer ORDER BY fav_count DESC')
+        query = dictfetchall(cursor)
+    context = {'query': query}
+    return render(request, 'favorites.html', context)
+
+
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"
     columns = [col[0] for col in cursor.description]
