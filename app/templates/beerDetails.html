@@ -1,0 +1,24 @@
+<table class="table table-striped" id="favorites-table">
+    <thead>
+      <tr>
+        <th>Drink Name</th>
+        <th>Produced By</th>
+        <th>Produced In</th>
+        <th>ABV</th>
+        <th>Type</th>
+        <th>IBU</th>
+      </tr>
+    </thead>
+    <tbody>
+		  {% for item in query %}
+        <tr>
+          <td>{{ item.d_name }}</td>
+          <td>{{ item.p_name }}</td>
+          <td>{{ item.p_location }}</td>
+          <td>{{ item.d_abv }}</td>
+          <td>{{ item.b_type }}</td>
+          <td>{{ item.b_ibu }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+</table>
