@@ -48,11 +48,12 @@ def login(request):
             password = form.cleaned_data['password']
             user = [username, password]
             print("Login attempted: ", user)
-            cursor.execute("SELECT c_username FROM consumer WHERE c_username = %s AND c_password=%s", user)
+            cursor.execute("SELECT * FROM consumer WHERE c_username = %s AND c_password=%s", user)
             query = dictfetchall(cursor)
             if query:
                 dat_user = query[0]
                 request.session["uname"] = dat_user['c_username']
+                request.session["name"] = dat_user['c_name']
                 messages.success(request, 'Successfully logged in')
                 return HttpResponseRedirect(reverse('index'))
             messages.error(request, 'Incorrect username/password')
