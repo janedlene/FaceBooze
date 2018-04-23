@@ -34,6 +34,14 @@
 </div>
     <div class="row">
         <h2>Drinks</h2>
+        {% if allow_edit %}
+        <ul>
+        <li><a href="{% url 'producer-add-drink-beer' %}">Add Beer</a></li>
+        <li><a href="{% url 'producer-add-drink-wine' %}">Add Wine</a></li>
+        <li><a href="{% url 'producer-add-drink-liquor' %}">Add Liquor</a></li>
+        <li><a href="{% url 'producer-add-drink-other' %}">Add Other</a></li>
+        </ul>
+        {% endif %}
     </div>
     <div class="row">
         <table class="table table-striped" id="owned_drinks_table">
@@ -41,6 +49,9 @@
             <tr>
                 <th>Drink Name</th>
                 <th>ABV</th>
+                {% if allow_edit %}
+                <th>Delete</th>
+                {% endif %}
             </tr>
             </thead>
             <tbody>
@@ -48,6 +59,9 @@
             <tr>
                 <td>{{ item.d_name }}</td>
                 <td>{{ item.d_abv }}</td>
+                {% if allow_edit %}
+                <td><a href="{% url 'producer-delete-drink' item.d_id %}">X</a></td>
+                {% endif %}
             </tr>
             {% endfor %}
             </tbody>

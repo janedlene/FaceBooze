@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseForbidden
 from django.db import connection
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -9,14 +9,14 @@ import xmlrpclib
 import json
 import datetime
 
-from .forms import SupplierForm, CustomerForm, LoginForm, RecipeForm, ReviewForm, OrderHistoryForm
+from .forms import *
 
 
 def login_required(f):
     def wrap(request, *args, **kwargs):
         # try authenticating the user
         if request.session.get('uname', None) == None:
-            messages.error(request, "Must login to lazychef.")
+            messages.error(request, "Must login to Facebooze.")
             return HttpResponseRedirect(reverse('login'))
         return f(request, *args, **kwargs)
 
@@ -148,7 +148,7 @@ def index(request):
             isRet = True
     if isProd:
         return producer_profile(request, request.session['uname'])
-    return HttpResponseRedirect(reversed('logout'))
+    return HttpResponseRedirect(reverse('logout'))
 
 @login_required
 def producer_profile(request, p_id):
@@ -163,16 +163,87 @@ def producer_profile(request, p_id):
 
     isOwner = (request.session.get('uname', None) == p_id)
     context = {'query': query, 'producer': producer, 'allow_edit': isOwner}
+    if isOwner:
+        context['form-add'] = ProducerAddDrinkForm()
     return render(request, 'producerProfile.html', context)
 
-def isCustomer(username):
-    cursor = connection.cursor()
+def addDrink(p_id, name, abv):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT username FROM Customer WHERE username = %s", [username])
-        data = cursor.fetchall()
-        if len(data) > 0:
-            return True
-    return False
+        cursor.execute("SELECT max(d_id) FROM drink")
+        d_id = cursor.fetchone()[0] + 1
+        cursor.execute("INSERT INTO drink(d_id, d_name, d_abv, p_username) VALUES (%s, %s, %s, %s)", [d_id, name, abv, p_id])
+        return d_id
+
+
+@login_required
+def producer_add_drink_beer(request):
+    if request.method == 'GET':
+        form = BeerForm()
+        context = {'title': 'Add a new beer', 'form': form}
+        return render(request, 'genericForm.html', context=context)
+    elif request.method == 'POST':
+        form = BeerForm(request.POST)
+        if form.is_valid():
+            d_id = addDrink(request.session['uname'], form.cleaned_data['name'], form.cleaned_data['abv'])
+            with connection.cursor() as cursor:
+                cursor.execute('INSERT INTO beer(d_id, b_type, b_ibu) VALUES (%s, %s, %s)',
+                               [d_id, form.cleaned_data['type'], form.cleaned_data['ibu']])
+    return HttpResponseRedirect(reverse('index'))
+
+@login_required
+def producer_add_drink_wine(request):
+    if request.method == 'GET':
+        form = WineForm()
+        context = {'title': 'Add a new wine', 'form': form}
+        return render(request, 'genericForm.html', context=context)
+    elif request.method == 'POST':
+        form = WineForm(request.POST)
+        if form.is_valid():
+            d_id = addDrink(request.session['uname'], form.cleaned_data['name'], form.cleaned_data['abv'])
+            with connection.cursor() as cursor:
+                cursor.execute('INSERT INTO wine(d_id, w_type, w_year) VALUES (%s, %s, %s)',
+                               [d_id, form.cleaned_data['type'], form.cleaned_data['year']])
+    return HttpResponseRedirect(reverse('index'))
+
+@login_required
+def producer_add_drink_liquor(request):
+    if request.method == 'GET':
+        form = LiquorForm()
+        context = {'title': 'Add a new liquor', 'form': form}
+        return render(request, 'genericForm.html', context=context)
+    elif request.method == 'POST':
+        form = LiquorForm(request.POST)
+        if form.is_valid():
+            d_id = addDrink(request.session['uname'], form.cleaned_data['name'], form.cleaned_data['abv'])
+            with connection.cursor() as cursor:
+                cursor.execute('INSERT INTO liquor(d_id, l_type, flavor) VALUES (%s, %s, %s)',
+                               [d_id, form.cleaned_data['type'], form.cleaned_data['flavor']])
+    return HttpResponseRedirect(reverse('index'))
+
+
+@login_required
+def producer_add_drink_other(request):
+    if request.method == 'GET':
+        form = ProducerAddDrinkForm()
+        context = {'title': 'Add a new drink', 'form': form}
+        return render(request, 'genericForm.html', context=context)
+    elif request.method == 'POST':
+        form = ProducerAddDrinkForm(request.POST)
+        if form.is_valid():
+            d_id = addDrink(request.session['uname'], form.cleaned_data['name'], form.cleaned_data['abv'])
+    return HttpResponseRedirect(reverse('index'))
+
+
+@login_required
+def producer_delete_drink(request, d_id):
+    uname = request.session['uname']
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT d_id FROM drink WHERE d_id=%s AND p_username=%s", [d_id, uname])
+        if len(cursor.fetchall()) != 1:
+            return HttpResponseForbidden()
+        cursor.execute("DELETE FROM drink WHERE d_id=%s", [d_id])
+
+    return HttpResponseRedirect(reverse('index'))
 
 
 def dictfetchall(cursor):
