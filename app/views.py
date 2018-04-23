@@ -203,7 +203,7 @@ def search_drinks(request):
     else:
         form = SearchDrinkForm()
         with connection.cursor() as cursor:
-            cursor.execute("select d_id,d_name,p_name,p_username \
+            cursor.execute("select d_id,d_name,p_name,p_username,p_location \
             from facebooze.drink natural join facebooze.producer")
             query = dictfetchall(cursor)
     context = {'query': query, 'form': form}
