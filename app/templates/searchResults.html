@@ -24,6 +24,7 @@
           <tr>
             <th>Drink Name</th>
             <th>Drink Producer</th>
+            <th>Producer Location</th>
             <th>Add To Favorites</th>
           </tr>
         </thead>
@@ -32,6 +33,7 @@
                 <tr>
                     <td>{{ item.d_name }}</td>
                     <td>{{ item.p_name }}</td>
+                    <td>{{ item.p_location }}</td>
                     <td><a href="{% url 'add-to-favorites' item.d_id %}" class="btn btn-primary">Add To Favorites</a></td>
                 </tr>
             {% endfor %}
