@@ -177,6 +177,7 @@ def addDrink(p_id, name, abv):
 
 @login_required
 def producer_add_drink_beer(request):
+    context = {}
     if request.method == 'GET':
         form = BeerForm()
         context = {'title': 'Add a new beer', 'form': form}
@@ -192,6 +193,7 @@ def producer_add_drink_beer(request):
 
 @login_required
 def producer_add_drink_wine(request):
+    context = {}
     if request.method == 'GET':
         form = WineForm()
         context = {'title': 'Add a new wine', 'form': form}
@@ -207,6 +209,7 @@ def producer_add_drink_wine(request):
 
 @login_required
 def producer_add_drink_liquor(request):
+    context = {}
     if request.method == 'GET':
         form = LiquorForm()
         context = {'title': 'Add a new liquor', 'form': form}
@@ -223,6 +226,7 @@ def producer_add_drink_liquor(request):
 
 @login_required
 def producer_add_drink_other(request):
+    context = {}
     if request.method == 'GET':
         form = ProducerAddDrinkForm()
         context = {'title': 'Add a new drink', 'form': form}
@@ -260,6 +264,7 @@ def retailer_profile(request, r_id):
 
 @login_required
 def retailer_add_stock(request):
+    context = {}
     if request.method == 'GET':
         form = RetailerAddStockForm()
         context = {'title': 'Add a new stock item', 'form': form}
@@ -271,7 +276,6 @@ def retailer_add_stock(request):
                 cursor.execute("INSERT INTO retail_inv(r_username, d_id, quantity) VALUES (%s,%s,%s)",
                                [uname, form.cleaned_data['d_id'], form.cleaned_data['quantity']])
             return HttpResponseRedirect(reverse('index'))
-
 
     return render(request, 'genericForm.html', context=context)
 
