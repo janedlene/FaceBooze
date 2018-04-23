@@ -11,7 +11,7 @@
 		{% for item in query %}
 			<tr>
 				<td>{{ item.d_name }}</td>
-				<td><a href="{% url 'delete-from-favorites' item.d_id %}">{{ item.p_name }}</a></td>
+				<td><a href="{% url 'display-details' item.d_id %}">{{ item.p_name }}</a></td>
 				<td>{{ item.p_location }}</td>
         <td><a href="{% url 'delete-from-favorites' item.d_id %}" class="btn btn-primary">Delete From Favorites</a></td>
 			</tr>

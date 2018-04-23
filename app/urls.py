@@ -9,6 +9,7 @@ urlpatterns = [
     url(r'^register/consumer/$', views.consumerRegister, name='consumer-register'),
     url(r'^home/$', views.index, name='index'),
     url(r'^home/searchdrinks/$', views.search_drinks, name='search-drinks'),
+    url(r'^home/displaydetails/(?P<d_id>[0-9]+)/$', views.displayDrinkDetails, name='display-details'),
     url(r'^home/addtofavs/(?P<d_id>[0-9]+)/$', views.addToFavorites, name='add-to-favorites'),
     url(r'^home/deletefromfavs/(?P<d_id>[0-9]+)/$', views.removeFromFavorites, name='delete-from-favorites'),
     url(r'^home/review/(?P<id>[0-9]+)/$', views.createReview, name='create-review'),

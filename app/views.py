@@ -155,6 +155,31 @@ def supplierRegister(request):
     context = {'form': form}
     return render(request, 'supplierRegister.html', context)
 @login_required
+def displayDrinkDetails(request, d_id):
+    cursor = connection.cursor()
+    drink_id = d_id
+    drink_query=[]
+    produced_by_query=[]
+    c_username = request.session.get('uname', None)
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * from drink NATURAL JOIN producer NATURAL JOIN beer WHERE d_id = %s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'drink_query': drink_query}
+            return render(request, 'beerDetails.html', context)
+        cursor.execute("SELECT * from drink NATURAL JOIN producer NATURAL JOIN wine WHERE d_id = %s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'drink_query': drink_query}
+            return render(request, 'wineDetails.html', context)
+        cursor.execute("SELECT * from drink NATURAL JOIN producer NATURAL JOIN liquor WHERE d_id = %s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'drink_query': drink_query}
+            return render(request, 'liquorDetails.html', context)
+    messages.error(request, 'invalid drink id')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+@login_required
 def removeFromFavorites(request, d_id):
     cursor = connection.cursor()
     drink_id = d_id
