@@ -19,7 +19,7 @@ from .forms import SupplierForm, SearchDrinkForm, ConsumerForm, LoginForm, Recip
 def login_required(f):
     def wrap(request, *args, **kwargs):
         # try authenticating the user
-        if request.session.get('lazylogin', None) == None:
+        if request.session.get('uname', None) == None:
             messages.error(request, "Must login to lazychef.")
             return HttpResponseRedirect(reverse('login'))
         return f(request, *args, **kwargs)
@@ -45,13 +45,14 @@ def login(request):
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
-            user = [username]
-            cursor.execute("SELECT c_id, c_name FROM consumer WHERE c_name = %s", user)
+            password = form.cleaned_data['password']
+            user = [username, password]
+            print("Login attempted: ", user)
+            cursor.execute("SELECT c_username FROM consumer WHERE c_username = %s AND c_password=%s", user)
             query = dictfetchall(cursor)
-            dat_user = query[0]
             if query:
-                request.session["lazylogin"] = dat_user['c_name']
-                request.session["lazycid"] = dat_user['c_id']
+                dat_user = query[0]
+                request.session["uname"] = dat_user['c_username']
                 messages.success(request, 'Successfully logged in')
                 return HttpResponseRedirect(reverse('index'))
             messages.error(request, 'Incorrect username/password')
@@ -206,8 +207,9 @@ def index(request):
     query=[]
     with connection.cursor() as cursor:
         cursor.execute("select * from \
-        (facebooze.consumer natural join facebooze.favorites natural join facebooze.drink natural join facebooze.producer)\
-         where c_name= %s", [request.session.get('lazylogin', None)])
+        (facebooze.consumer natural join facebooze.favorites \
+        natural join facebooze.drink natural join facebooze.producer) \
+        where c_username=%s", [request.session.get("uname", None)])
         query = dictfetchall(cursor)
     context = {'query': query}
     return render(request, 'index.html', context)
