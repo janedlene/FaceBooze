@@ -33,7 +33,7 @@ def logout(request):
 
 def login(request):
     # if logged in redirect to home
-    if request.session.get('lazylogin', None) != None:
+    if request.session.get('uname', None) != None:
         return HttpResponseRedirect(reverse('index'))
     cursor = connection.cursor()
     if request.method == 'POST':
@@ -41,20 +41,26 @@ def login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            user = [username]
-            if request.POST.get('submit', None) == 'Customer Login':
-                cursor.execute("SELECT password FROM Customer WHERE username = %s", user)
-            else:
-                cursor.execute("SELECT password FROM Supplier WHERE username = %s", user)
-            query = cursor.fetchone()
-            if query:
-                query = query[0]
-                if hashers.check_password(password, query):
-                    request.session["lazylogin"] = username
-                    messages.success(request, 'Successfully logged in')
-                    return HttpResponseRedirect(reverse('index'))
-            messages.error(request, 'Incorrect username/password')
-            return HttpResponseRedirect(reverse('login'))
+            user = [username, password]
+	    print("Login attempted: ", user)
+	    cursor.execute("SELECT * from retailer WHERE r_username = %s AND r_password = %s", user)
+	    query = dictfetchall(cursor)
+	    if query:
+	    	dat_user = query[0]
+		request.session["uname"] = dat_user['r_username']
+		request.session["name"] = dat_user['r_name']
+		messages.success(request, 'Successfully logged in')
+		return HttpResponseRedirect(reverse('index'))
+	    cursor.execute("SELECT * from producer WHERE p_username = %s AND p_password = %s", user)
+	    query = dictfetchall(cursor)
+	    if query:
+	    	dat_user = query[0]
+		request.session["uname"] = dat_user['p_username']
+		request.session["name"] = dat_user['p_name']
+		messages.success(request, 'Successfully logged in')
+		return HttpResponseRedirect(reverse('index'))
+	    messages.error(request, 'Incorrect username/password')
+	    return HttpResponseRedirect(reverse('index'))
         else:
             messages.error(request, 'Must fill out all fields')
     form = LoginForm()
