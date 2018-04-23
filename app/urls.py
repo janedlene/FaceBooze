@@ -6,6 +6,9 @@ urlpatterns = [
     url(r'^$', views.login, name='login'),
     url(r'^logout/$', views.logout, name='logout'),
     url(r'^register/supplier/$', views.supplierRegister, name='supplier-register'),
+    url(r'^home/$', views.index, name='index'),
+    # url(r'^home/favorites/$', views.favorites, name='favorites'),
+    url(r'^home/search/$', views.search, name='search'),
     url(r'^home/producer_profile/(?P<p_id>.+)/$', views.producer_profile, name='producer-profile'),
     url(r'^home/retailer_profile/(?P<p_id>.+)/$', views.retailer_profile, name='retailer-profile'),
     url(r'^home/producer_add_drink/beer/$', views.producer_add_drink_beer, name='producer-add-drink-beer'),
@@ -15,5 +18,5 @@ urlpatterns = [
     url(r'^home/producer_delete_drink/(?P<d_id>[0-9]+)/$', views.producer_delete_drink, name='producer-delete-drink'),
     url(r'^home/retailer_add_stock/$', views.retailer_add_stock, name='retailer-add-inv'),
     url(r'^home/retailer_delete_stock/(?P<d_id>[0-9]+)/$', views.retailer_delete_stock, name='retailer-delete-inv'),
-    url(r'^home/$', views.index, name='index'),
+
 ]

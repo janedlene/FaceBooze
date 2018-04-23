@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% load widget_tweaks %}|
+
+{% block content %}
+
+{% load static %}
+<form action="" method="post">
+    {% csrf_token %}
+    {% for field in form %}
+        <div class="form-group">
+            <div class="col-md-3">
+                <label class="control-label form-label" for="id_{{ field.name }}">{{ field.label }}</label>:
+            </div>
+            <div class="col-md-9">
+                {{ field | add_class:"form-control"}}
+            </div>
+        </div>
+    {% endfor %}
+    <input style="margin-top:15px; margin-bottom:15px; width:50%" class="btn btn-primary" type="submit" value="Find Some Booze!" name="submit"/>
+</form>
+<table class="table table-striped" id="favorites-table">
+        <thead>
+          <tr>
+            <th>Drink Name</th>
+            <th>Drink Producer</th>
+            <th>Producer Location</th>
+          </tr>
+        </thead>
+        <tbody>
+            {% for item in query %}
+                <tr>
+                    <td>{{ item.d_name }}</td>
+                    <td><a href="{% url 'producer-profile' item.p_username %}">{{ item.p_name }}</a></td>
+                    <td>{{ item.p_location }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+</table>
+{% endblock %}

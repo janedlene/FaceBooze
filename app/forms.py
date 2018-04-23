@@ -53,4 +53,6 @@ class RetailerAddStockForm(forms.Form):
     d_id = forms.IntegerField(label="Drink ID", min_value=0)
     quantity = forms.IntegerField(label="Quantity", min_value=0)
 
+class SearchDrinkForm(forms.Form):
+    search_string = forms.CharField(label='Search For Drinks', max_length=30)
 

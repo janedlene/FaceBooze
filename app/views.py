@@ -292,7 +292,31 @@ def retailer_delete_stock(request, d_id):
 
     return HttpResponseRedirect(reverse('index'))
 
-
+@login_required
+def search(request):
+    form=[]
+    query=[]
+    if request.method == 'POST':
+        form = SearchDrinkForm(request.POST)
+        if form.is_valid():
+            search = form.cleaned_data['search_string']
+            print(search)
+            with connection.cursor() as cursor:
+                cursor.execute("select * \
+                from facebooze.drink natural join facebooze.producer \
+                WHERE MATCH (d_name) AGAINST (%s IN NATURAL LANGUAGE MODE) \
+                or MATCH (p_location) AGAINST (%s IN NATURAL LANGUAGE MODE) \
+                or MATCH (p_name) AGAINST (%s IN NATURAL LANGUAGE MODE);" \
+                ,[search,search,search])
+                query = dictfetchall(cursor)
+    else:
+        form = SearchDrinkForm()
+        with connection.cursor() as cursor:
+            cursor.execute("select d_id,d_name,p_name,p_username,p_location \
+            from facebooze.drink natural join facebooze.producer")
+            query = dictfetchall(cursor)
+    context = {'query': query, 'form': form}
+    return render(request, 'searchResults.html', context)
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"

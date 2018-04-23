@@ -12,15 +12,16 @@
 	<nav class="navbar navbar-default navbar-fixed-top" style="background:#000000; border-color:#483E85; text-align:center;" >
 		<div class="container-fluid">
 			<div class="navbar-header">
-				{% if not request.session.lazylogin %}
+				{% if not request.session.uname %}
 					<a class="navbar-brand" href="{% url 'login' %}" style="color:white;">Facebooze</a>
 				{% else %}
 					<a class="navbar-brand" href="{% url 'index' %}" style="color:white;">Facebooze</a>
 				{% endif %}
 			</div>
-			{% if request.session.lazylogin %}
+			{% if request.session.uname %}
 				<ul class="nav navbar-nav navbar-right">
 					<li><a class="btn btn-primary btn" href="{% url 'index' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">View Profile</a></li>
+					<li><a class="btn btn-primary" href="{% url 'search' %}" style="background-color:#000000; text-align:center; border-color:#000000; color:white;" role="button">Search Drinks</a></li>
 					<li><a class="btn btn-primary btn" href="{% url 'logout' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">Log Out</a></li>
 				</ul>
 			{% endif %}
