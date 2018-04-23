@@ -10,59 +10,23 @@
 <div style="width:100%; text-align:center; margin-bottom:50px;">
 <img src=""{% static "facebooze/admin/img/example.jpg" %}""/>
 </div>
-
-<div class="container">	
-
-	<ul class="nav nav-tabs">
-		<li class="active" style="width:50%; text-align:center;">
-        	<a href="#consumer" data-toggle="tab">Consumer Login</a>
-		</li>
-	<!--	<li style="width:50%; text-align:center;">
-			<a href="#supplier" data-toggle="tab">Supplier Login</a>
-		</li> -->
-	</ul>
-
-	<div class="tab-content">
-		<div class="tab-pane active" id="consumer">
-			<div style="margin-left:300px; margin-right:300px; margin-top:50px; margin-bottom:50px; text-align:center;">
-				<form action="" method="post">
-				    {% csrf_token %}
-				    {% for field in form %}
-						<div class="form-group">
-							<div class="col-md-3">
-			                	<label class="control-label form-label" for="id_{{ field.name }}">{{ field.label }}</label>:
-			                </div>
-			                <div class="col-md-9">
-		                    	{{ field | add_class:"form-control"}}
-		                    </div>
-		            	</div>
-	            	{% endfor %}
-				    <input style="margin-top:15px; margin-bottom:15px; width:50%;" class="btn btn-primary" type="submit" name="submit" value="Consumer Login" />
-				</form>
-				Don't have an account?
-				<a href="{% url 'consumer-register' %}">Consumer Sign Up</a>
-			</div>
-		</div>
-		<!--<div class="tab-pane" id="supplier" >
-			<div style="margin-left:300px; margin-right:300px; margin-top:50px; margin-bottom:50px; text-align:center;">
-				<form action="" method="post">
-				    {% csrf_token %}
-				    {% for field in form %}
-						<div class="form-group">
-							<div class="col-md-3">
-			                	<label class="control-label form-label" for="id_{{ field.name }}">{{ field.label }}</label>:
-			                </div>
-			                <div class="col-md-9">
-		                    	{{ field | add_class:"form-control"}}
-		                    </div>
-		            	</div>
-	            	{% endfor %}
-				    <input style="margin-top:15px; margin-bottom:15px; width:50%" class="btn btn-primary" type="submit" value="Supplier Login" name="submit"/>
-				</form>
-				Don't have an account?
-				<a href="{% url 'supplier-register' %}">Supplier Sign Up</a>
-			</div>
-	  	</div> -->
+	<div style="margin-left:300px; margin-right:300px; margin-top:50px; margin-bottom:50px; text-align:center;">
+		<form action="" method="post">
+			{% csrf_token %}
+			{% for field in form %}
+				<div class="form-group">
+					<div class="col-md-3">
+						<label class="control-label form-label" for="id_{{ field.name }}">{{ field.label }}</label>:
+					</div>
+					<div class="col-md-9">
+						{{ field | add_class:"form-control"}}
+					</div>
+				</div>
+			{% endfor %}
+			<input style="margin-top:15px; margin-bottom:15px; width:50%;" class="btn btn-primary" type="submit" name="submit" value="Consumer Login" />
+		</form>
+		Don't have an account?
+		<a href="{% url 'consumer-register' %}">Consumer Sign Up</a>
 	</div>
 </div>
 
