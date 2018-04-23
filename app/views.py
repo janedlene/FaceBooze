@@ -28,8 +28,8 @@ def login_required(f):
 @login_required
 def logout(request):
     context = {}
-    if request.session.get('lazylogin', None) != None:
-        del request.session["lazylogin"]
+    if request.session.get('uname', None) != None:
+        del request.session["uname"]
         request.session.modified = True
         messages.success(request, 'Successfully logged out')
     else:
@@ -38,7 +38,7 @@ def logout(request):
 
 def login(request):
     # if logged in redirect to home
-    if request.session.get('lazylogin', None) != None:
+    if request.session.get('uname', None) != None:
         return HttpResponseRedirect(reverse('index'))
     cursor = connection.cursor()
     if request.method == 'POST':
@@ -61,7 +61,7 @@ def login(request):
             if query:
                 query = query[0]
                 if hashers.check_password(password, query):
-                    request.session["lazylogin"] = username
+                    request.session["uname"] = username
                     messages.success(request, 'Successfully logged in')
                     return HttpResponseRedirect(reverse('index'))'''
         else:
@@ -72,7 +72,7 @@ def login(request):
 
 def consumerRegister(request):
     # if logged in redirect to home
-    if request.session.get('lazylogin', None) != None:
+    if request.session.get('uname', None) != None:
         return HttpResponseRedirect(reverse('index'))
     cursor = connection.cursor()
     # if this is a POST request we need to process the form data
@@ -102,7 +102,7 @@ def consumerRegister(request):
 
 def supplierRegister(request):
     # if logged in redirect to home
-    if request.session.get('lazylogin', None) != None:
+    if request.session.get('uname', None) != None:
         return HttpResponseRedirect(reverse('index'))
     # if this is a POST request we need to process the form data
     cursor = connection.cursor()
@@ -153,28 +153,29 @@ def supplierRegister(request):
 def removeFromFavorites(request, d_id):
     cursor = connection.cursor()
     drink_id = d_id
-    c_id = request.session.get('lazycid', None)
+    c_uname = request.session.get('uname', None)
     with connection.cursor() as cursor:
-        cursor.execute("SELECT c_id, d_id FROM favorites WHERE c_id = %s AND d_id = %s", [c_id,drink_id])
+        cursor.execute("SELECT c_username, d_id FROM favorites WHERE c_username = %s AND d_id = %s", [c_uname,drink_id])
         data = cursor.fetchall()
         if len(data) == 0:
             messages.error(request, "This drink is not in your favorites.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        cursor.execute("DELETE FROM favorites where c_id=%s AND d_id=%s", [c_id,drink_id])
+        cursor.execute("DELETE FROM favorites where c_username=%s AND d_id=%s", [c_uname,drink_id])
     messages.success(request, 'Successfully deleted favorite!')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 @login_required
 def addToFavorites(request, d_id):
     cursor = connection.cursor()
     drink_id = d_id
-    c_id = request.session.get('lazycid', None)
+    c_username = request.session.get('uname', None)
     with connection.cursor() as cursor:
-        cursor.execute("SELECT c_id, d_id FROM favorites WHERE c_id = %s AND d_id = %s", [c_id,drink_id])
+        cursor.execute("SELECT c_username, d_id FROM favorites WHERE c_username = %s AND d_id = %s", [c_username,drink_id])
         data = cursor.fetchall()
         if len(data) > 0:
             messages.success(request, "This drink is already in your favorites.")
             return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
-        cursor.execute("INSERT INTO favorites(c_id, d_id) VALUES (%s, %s)", [c_id,drink_id])
+        fav = [c_username, d_id]
+        cursor.execute("INSERT INTO favorites (c_username, d_id) VALUES (%s, %s)", fav)
     messages.success(request, 'Successfully added favorite!')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 @login_required
@@ -235,7 +236,7 @@ def createReview(request, id):
             review = [title, body, rating]
 
             with connection.cursor() as cursor:
-                sess_user = request.session.get('lazylogin', None)
+                sess_user = request.session.get('uname', None)
 
                 cursor.execute("INSERT INTO Review(title, body, rating, date) VALUES (%s, %s, %s, CURDATE())", review)
                 review_id = cursor.lastrowid
@@ -266,7 +267,7 @@ def sellRecipe(request):
             recipe = [title, directions, serving_size, cooking_time, cuisine_type, price, image]
 
             ingredient_count = form.cleaned_data['ingredient_count']
-            username = request.session.get('lazylogin', None)
+            username = request.session.get('uname', None)
             
 
             with connection.cursor() as cursor:
@@ -345,11 +346,11 @@ def editRecipe(request, id):
 @login_required
 def buyRecipe(request, id):
     cursor = connection.cursor()
-    if not isCustomer(request.session.get('lazylogin', None)):
+    if not isCustomer(request.session.get('uname', None)):
         messages.error(request, 'Must be a customer to buy a recipe')
         return HttpResponseRedirect(reverse('index'))
     recipe_id = id
-    username = request.session.get('lazylogin', None)
+    username = request.session.get('uname', None)
     date = datetime.datetime.now()
     purchase = [username, recipe_id, date]
     with connection.cursor() as cursor:
@@ -380,7 +381,7 @@ def isCustomer(username):
 def cancelOrder(request, id):
     cursor = connection.cursor()
     recipe_id = id
-    username = request.session.get('lazylogin', None)
+    username = request.session.get('uname', None)
     with connection.cursor() as cursor:
         cursor.execute("DELETE FROM purchase WHERE purchase.recipe_id = %s AND purchase.username = %s", [recipe_id, username])
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
@@ -390,7 +391,7 @@ def deleteReview(request, id):
     cursor = connection.cursor()
     review_id = id
     with connection.cursor() as cursor:
-        sess_user = request.session.get('lazylogin', None)
+        sess_user = request.session.get('uname', None)
         cursor.execute("DELETE FROM Vote WHERE Vote.review_id = %s", [review_id])
         cursor.execute("DELETE FROM has WHERE has.review_id = %s", [review_id])
         cursor.execute("DELETE FROM wrote WHERE wrote.review_id = %s AND wrote.username = %s", [review_id, sess_user])
@@ -410,7 +411,7 @@ def editReview(request, id):
             rating = form.cleaned_data['rating']
 
             with connection.cursor() as cursor:
-                sess_user = request.session.get('lazylogin', None)
+                sess_user = request.session.get('uname', None)
                 cursor.execute("UPDATE Review SET Review.title = %s, Review.body = %s, Review.rating = %s WHERE Review.review_id = %s", [title, body, rating, review_id])
                 return HttpResponseRedirect(reverse('index'))
     else:
@@ -430,10 +431,10 @@ def recipeDetails(request, id):
     recipe_id = id
 
     with connection.cursor() as cursor:
-        sess_user = request.session.get('lazylogin', None)
+        sess_user = request.session.get('uname', None)
         cursor.execute("SELECT * FROM Recipe WHERE recipe_id = %s", [recipe_id])
         query = dictfetchall(cursor)
-        cursor.execute("SELECT * FROM sell WHERE username = %s", [request.session.get('lazylogin', None)])
+        cursor.execute("SELECT * FROM sell WHERE username = %s", [request.session.get('uname', None)])
         supplierRecipes = dictfetchall(cursor)
         cursor.execute("SELECT name, quantity FROM contains WHERE recipe_id = %s", [recipe_id])
         ingredients = dictfetchall(cursor)
@@ -450,7 +451,7 @@ def recipeDetails(request, id):
     for review in customerReviews:
         myreviews.append(review[0])    
 
-    isCust = isCustomer(request.session.get('lazylogin', None))
+    isCust = isCustomer(request.session.get('uname', None))
     supplierRecipeIDs = []
 
     for recipe in supplierRecipes:
@@ -464,7 +465,7 @@ def recipeDetails(request, id):
 def review_upvote(request, id):
     cursor = connection.cursor()
     review_id = id
-    sess_user = request.session.get('lazylogin', None)
+    sess_user = request.session.get('uname', None)
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM Vote WHERE Vote.username = %s AND Vote.review_id = %s", [sess_user, review_id])
         userVotes = dictfetchall(cursor)
@@ -484,7 +485,7 @@ def review_upvote(request, id):
 def review_downvote(request, id):
     cursor = connection.cursor()
     review_id = id
-    sess_user = request.session.get('lazylogin', None)
+    sess_user = request.session.get('uname', None)
     with connection.cursor() as cursor:
         cursor.execute("SELECT Vote.review_id FROM Vote WHERE username = %s AND review_id = %s", [sess_user, review_id])
         userVotes = dictfetchall(cursor)
@@ -509,9 +510,9 @@ def ajax_search_recipe(request):
             with connection.cursor() as cursor:
                 cursor.execute("SELECT * FROM  Recipe WHERE title LIKE " + q + " OR serving_size LIKE " + q)
                 query = dictfetchall(cursor)
-                cursor.execute("SELECT recipe_id FROM purchase WHERE username = %s", [request.session.get('lazylogin', None)])
+                cursor.execute("SELECT recipe_id FROM purchase WHERE username = %s", [request.session.get('uname', None)])
                 customerPurchases = cursor.fetchall()
-    isCust = isCustomer(request.session.get('lazylogin', None))
+    isCust = isCustomer(request.session.get('uname', None))
     history = []
     for purchase in customerPurchases:
         history.append(purchase[0])
@@ -524,7 +525,7 @@ def viewProfile(request):
     cursor = connection.cursor()
     query = []
     with connection.cursor() as cursor:
-        sess_user = request.session.get('lazylogin', None)
+        sess_user = request.session.get('uname', None)
         query = cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date, Recipe.recipe_id FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
         query = dictfetchall(cursor)
         customerinfo = cursor.execute("SELECT * FROM Customer WHERE Customer.username = %s", [sess_user])
@@ -537,7 +538,7 @@ def viewSupplierProfile(request):
     cursor = connection.cursor()
     query = []
     with connection.cursor() as cursor:
-        sess_user = request.session.get('lazylogin', None)
+        sess_user = request.session.get('uname', None)
         query = cursor.execute("SELECT Recipe.title, Recipe.price, Recipe.recipe_id FROM Recipe NATURAL JOIN Supplier NATURAL JOIN sell WHERE Supplier.username = %s", [sess_user])
         query = dictfetchall(cursor)
         supplierinfo = cursor.execute("SELECT * FROM Supplier WHERE Supplier.username = %s", [sess_user])
@@ -547,7 +548,7 @@ def viewSupplierProfile(request):
 
 @login_required
 def export_customer(request):
-    sess_user = request.session.get('lazylogin', None)
+    sess_user = request.session.get('uname', None)
     export_type = request.GET.get('export_type')
     cursor = connection.cursor()
     cursor.execute("SELECT Recipe.title, Recipe.price, purchase.date FROM Recipe NATURAL JOIN Customer NATURAL JOIN purchase WHERE Customer.username = %s", [sess_user])
@@ -555,7 +556,7 @@ def export_customer(request):
     for item in query:
         item['date'] = str(item['date'])
         item['price'] = float(item['price'])
-    filename = sess_user = request.session.get('lazylogin', None) + "History" + str(datetime.datetime.now())        
+    filename = sess_user = request.session.get('uname', None) + "History" + str(datetime.datetime.now())        
     if export_type == "JSON":
         data = json.dumps(query, indent=4, sort_keys=True)
         filename = filename + ".json"
@@ -569,7 +570,7 @@ def export_customer(request):
 
 @login_required
 def export_supplier(request):
-    sess_user = request.session.get('lazylogin', None)
+    sess_user = request.session.get('uname', None)
     export_type = request.GET.get('export_type')
     cursor = connection.cursor()
     cursor.execute("SELECT Recipe.title, Recipe.price, Recipe.directions, Recipe.serving_size, Recipe.cooking_time, Recipe.cuisine_type, Recipe.available FROM Recipe NATURAL JOIN Supplier NATURAL JOIN sell WHERE Supplier.username = %s", [sess_user])
@@ -578,7 +579,7 @@ def export_supplier(request):
         item['price'] = float(item['price'])
         item['cooking_time'] = float(item['cooking_time'])
         item['serving_size'] = float(item['serving_size'])
-    filename = sess_user = request.session.get('lazylogin', None) + "Recipes" + str(datetime.datetime.now())        
+    filename = sess_user = request.session.get('uname', None) + "Recipes" + str(datetime.datetime.now())        
     if export_type == "JSON":
         data = json.dumps(query, indent=4, sort_keys=True)
         filename = filename + ".json"
