@@ -178,18 +178,31 @@ def supplierRegister(request):
 @login_required
 def index(request):
     cursor = connection.cursor()
-    query = []
-    customerPurchases = []
+    query = [] 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM Recipe")
-        query = dictfetchall(cursor)
-        cursor.execute("SELECT recipe_id FROM purchase WHERE username = %s", [request.session.get('lazylogin', None)])
-        customerPurchases = cursor.fetchall()
-    isCust = isCustomer(request.session.get('lazylogin', None))
-    history = []
+    	isProd = False
+	isRet = False
+	cursor.execute("SELECT * FROM producer WHERE p_username = %s", request.session["uname"])
+	data1 = cursor.fetchall()
+	if len(data1) > 0:
+	    isProd = True
+	cursor.execute("SELECT * FROM retailer WHERE r_username = %s", request.session["uname"])
+	data2 = cursor.fetchall()
+	if len(data2) > 0:
+	    isRet = True
+    	# if producer, get all drinks they produce
+	if isProd:
+            cursor.execute("SELECT * FROM drink WHERE p_username = %s", request.session["uname"])
+            query = dictfetchall(cursor)
+	    producer_drinks = cursor.fetchall()
+	# if retailer, get all drinks in inventory
+	elif isRet:
+	    cursor.execute("SELECT * from retail_inv WHERE r_username = %s", request.session["uname"])
+	    query = dictfetchall(cursor)
+	    retailer_drinks = cursor.fetchall()
     for purchase in customerPurchases:
         history.append(purchase[0])
-    context = {'isCustomer': isCust, 'query': query, 'custHistory': history}
+    context = {'isProducer': isProd, 'isRetailer': isRet, 'query': query}
     return render(request, 'index.html', context)
 
 
