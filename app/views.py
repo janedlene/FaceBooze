@@ -203,7 +203,7 @@ def search_drinks(request):
     else:
         form = SearchDrinkForm()
         with connection.cursor() as cursor:
-            cursor.execute("select d_id,d_name,p_name \
+            cursor.execute("select d_id,d_name,p_name,p_username \
             from facebooze.drink natural join facebooze.producer")
             query = dictfetchall(cursor)
     context = {'query': query, 'form': form}
@@ -220,6 +220,21 @@ def index(request):
         query = dictfetchall(cursor)
     context = {'query': query}
     return render(request, 'index.html', context)
+
+@login_required
+def producer_profile(request, p_id):
+    producer = {}
+    query = []
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM producer WHERE p_username=%s", [p_id])
+        producer = dictfetchall(cursor)[0]
+
+        cursor.execute("SELECT * FROM drink WHERE p_username=%s", [p_id])
+        query = dictfetchall(cursor)
+    context = {'query': query, 'producer': producer}
+    return render(request, 'producerProfile.html', context)
+
+
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"

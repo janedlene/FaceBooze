@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container" style="margin-top:50px; margin-bottom:50px;">
+
+<h1>{{producer.name}}</h1>
+<hr>   
+<div class="container bg-info" style="border-radius: 20px;"> 
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted">Supplier Organization:</h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{producer.p_name}} </h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted">Address:</h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{producer.p_location}}</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-3">
+            <h3 class="text-muted">Phone Number:</h3>
+          </div>
+          <div class="col-md-9">
+            <h3>{{producer.p_phone}}</h3>
+          </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <h3 class="text-muted">Email:</h3>
+            </div>
+            <div class="col-md-9">
+                <h3>{{producer.p_email}}</h3>
+            </div>
+        </div>
+        <div class="row">
+            <table class="table table-striped" id="owned_drinks_table">
+                <thead>
+                <tr>
+                    <th>Drink Name</th>
+                    <th>ABV</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for item in query %}
+                <tr>
+                    <td>{{ item.d_name }}</td>
+                    <td>{{ item.d_abv }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+</div>
+</div>
+
+{% endblock %}

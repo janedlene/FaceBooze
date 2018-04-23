@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^home/searchdrinks/$', views.search_drinks, name='search-drinks'),
     url(r'^home/addtofavs/(?P<d_id>[0-9]+)/$', views.addToFavorites, name='add-to-favorites'),
     url(r'^home/deletefromfavs/(?P<d_id>[0-9]+)/$', views.removeFromFavorites, name='delete-from-favorites'),
+    url(r'^home/producer_profile/(?P<p_id>.+)/$', views.producer_profile, name='producer-profile'),
     url(r'^home/review/(?P<id>[0-9]+)/$', views.createReview, name='create-review'),
     #url(r'^home/profile/$', views.viewProfile, name='view-profile'),
     url(r'^home/supplier/profile/$', views.viewSupplierProfile, name='view-supplier-profile'),
