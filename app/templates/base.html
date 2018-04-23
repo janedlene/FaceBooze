@@ -13,18 +13,14 @@
 		<div class="container-fluid">
 			<div class="navbar-header">
 				{% if not request.session.lazylogin %}
-					<a class="navbar-brand" href="{% url 'login' %}" style="color:white;">lazychef</a>
+					<a class="navbar-brand" href="{% url 'login' %}" style="color:white;">Facebooze</a>
 				{% else %}
-					<a class="navbar-brand" href="{% url 'index' %}" style="color:white;">lazychef</a>
+					<a class="navbar-brand" href="{% url 'index' %}" style="color:white;">Facebooze</a>
 				{% endif %}
 			</div>
 			{% if request.session.lazylogin %}
 				<ul class="nav navbar-nav navbar-right">
-					{% if isCustomer %}
-					<li><a class="btn btn-primary btn" href="{% url 'view-profile' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">View Profile</a></li>
-					{% else %}
-						<li><a class="btn btn-primary btn" href="{% url 'view-supplier-profile' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">View Profile</a></li>
-					{% endif %}	
+					<li><a class="btn btn-primary btn" href="{% url 'index' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">View Profile</a></li>
 					<li><a class="btn btn-primary btn" href="{% url 'logout' %}" role="button" style="background-color:#000000; text-align:center; border-color:#000000; color:white;">Log Out</a></li>
 				</ul>
 			{% endif %}
