@@ -49,3 +49,8 @@ class LiquorForm(ProducerAddDrinkForm):
     type = forms.CharField(label="Liquor Type", max_length=100)
     flavor = forms.CharField(label="Liquor Flavor", max_length=100)
 
+class RetailerAddStockForm(forms.Form):
+    d_id = forms.IntegerField(label="Drink ID", min_value=0)
+    quantity = forms.IntegerField(label="Quantity", min_value=0)
+
+

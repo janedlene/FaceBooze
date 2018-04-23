@@ -148,12 +148,12 @@ def index(request):
             isRet = True
     if isProd:
         return producer_profile(request, request.session['uname'])
+    elif isRet:
+        return retailer_profile(request, request.session['uname'])
     return HttpResponseRedirect(reverse('logout'))
 
 @login_required
 def producer_profile(request, p_id):
-    producer = {}
-    query = []
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM producer WHERE p_username=%s", [p_id])
         producer = dictfetchall(cursor)[0]
@@ -163,9 +163,9 @@ def producer_profile(request, p_id):
 
     isOwner = (request.session.get('uname', None) == p_id)
     context = {'query': query, 'producer': producer, 'allow_edit': isOwner}
-    if isOwner:
-        context['form-add'] = ProducerAddDrinkForm()
     return render(request, 'producerProfile.html', context)
+
+
 
 def addDrink(p_id, name, abv):
     with connection.cursor() as cursor:
@@ -180,7 +180,6 @@ def producer_add_drink_beer(request):
     if request.method == 'GET':
         form = BeerForm()
         context = {'title': 'Add a new beer', 'form': form}
-        return render(request, 'genericForm.html', context=context)
     elif request.method == 'POST':
         form = BeerForm(request.POST)
         if form.is_valid():
@@ -188,14 +187,14 @@ def producer_add_drink_beer(request):
             with connection.cursor() as cursor:
                 cursor.execute('INSERT INTO beer(d_id, b_type, b_ibu) VALUES (%s, %s, %s)',
                                [d_id, form.cleaned_data['type'], form.cleaned_data['ibu']])
-    return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('index'))
+    return render(request, 'genericForm.html', context=context)
 
 @login_required
 def producer_add_drink_wine(request):
     if request.method == 'GET':
         form = WineForm()
         context = {'title': 'Add a new wine', 'form': form}
-        return render(request, 'genericForm.html', context=context)
     elif request.method == 'POST':
         form = WineForm(request.POST)
         if form.is_valid():
@@ -203,14 +202,14 @@ def producer_add_drink_wine(request):
             with connection.cursor() as cursor:
                 cursor.execute('INSERT INTO wine(d_id, w_type, w_year) VALUES (%s, %s, %s)',
                                [d_id, form.cleaned_data['type'], form.cleaned_data['year']])
-    return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('index'))
+    return render(request, 'genericForm.html', context=context)
 
 @login_required
 def producer_add_drink_liquor(request):
     if request.method == 'GET':
         form = LiquorForm()
         context = {'title': 'Add a new liquor', 'form': form}
-        return render(request, 'genericForm.html', context=context)
     elif request.method == 'POST':
         form = LiquorForm(request.POST)
         if form.is_valid():
@@ -218,20 +217,21 @@ def producer_add_drink_liquor(request):
             with connection.cursor() as cursor:
                 cursor.execute('INSERT INTO liquor(d_id, l_type, flavor) VALUES (%s, %s, %s)',
                                [d_id, form.cleaned_data['type'], form.cleaned_data['flavor']])
-    return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('index'))
 
+    return render(request, 'genericForm.html', context=context)
 
 @login_required
 def producer_add_drink_other(request):
     if request.method == 'GET':
         form = ProducerAddDrinkForm()
         context = {'title': 'Add a new drink', 'form': form}
-        return render(request, 'genericForm.html', context=context)
     elif request.method == 'POST':
         form = ProducerAddDrinkForm(request.POST)
         if form.is_valid():
             d_id = addDrink(request.session['uname'], form.cleaned_data['name'], form.cleaned_data['abv'])
-    return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('index'))
+    return render(request, 'genericForm.html', context=context)
 
 
 @login_required
@@ -244,6 +244,36 @@ def producer_delete_drink(request, d_id):
         cursor.execute("DELETE FROM drink WHERE d_id=%s", [d_id])
 
     return HttpResponseRedirect(reverse('index'))
+
+@login_required
+def retailer_profile(request, r_id):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM retailer WHERE r_username=%s", [r_id])
+        producer = dictfetchall(cursor)[0]
+
+        cursor.execute("SELECT * FROM drink NATURAL JOIN retail_inv WHERE r_username=%s", [r_id])
+        query = dictfetchall(cursor)
+
+    isOwner = (request.session.get('uname', None) == r_id)
+    context = {'query': query, 'producer': producer, 'allow_edit': isOwner}
+    return render(request, 'retailerProfile.html', context)
+
+@login_required
+def retailer_add_stock(request):
+    if request.method == 'GET':
+        form = RetailerAddStockForm()
+        context = {'title': 'Add a new stock item', 'form': form}
+    elif request.method == 'POST':
+        form = RetailerAddStockForm(request.POST)
+        if form.is_valid():
+            with connection.cursor() as cursor:
+                uname = request.session['uname']
+                cursor.execute("INSERT INTO retail_inv(r_username, d_id, quantity) VALUES (%s,%s,%s)",
+                               [uname, form.cleaned_data['d_id'], form.cleaned_data['quantity']])
+            return HttpResponseRedirect(reverse('index'))
+
+
+    return render(request, 'genericForm.html', context=context)
 
 
 def dictfetchall(cursor):
