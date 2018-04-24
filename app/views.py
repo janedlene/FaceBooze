@@ -178,6 +178,11 @@ def displayDrinkDetails(request, d_id):
         if len(drink_query) > 0:
             context = {'stocked_by_query': stocked_by_query, 'drink_query': drink_query}
             return render(request, 'liquorDetails.html', context)
+        cursor.execute("SELECT * FROM drink NATURAL JOIN producer WHERE d_id=%s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'stocked_by_query': stocked_by_query, 'drink_query': drink_query}
+            return render(request, 'drinkDetails.html', context)
     messages.error(request, 'invalid drink id')
     return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 @login_required
