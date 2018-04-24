@@ -18,5 +18,6 @@ urlpatterns = [
     url(r'^home/producer_delete_drink/(?P<d_id>[0-9]+)/$', views.producer_delete_drink, name='producer-delete-drink'),
     url(r'^home/retailer_add_stock/$', views.retailer_add_stock, name='retailer-add-inv'),
     url(r'^home/retailer_delete_stock/(?P<d_id>[0-9]+)/$', views.retailer_delete_stock, name='retailer-delete-inv'),
+    url(r'^home/displaydetails/(?P<d_id>[0-9]+)/$', views.displayDrinkDetails, name='display-details'),
 
 ]

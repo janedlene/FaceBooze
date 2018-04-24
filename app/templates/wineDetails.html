@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% load widget_tweaks %}|
+
+{% block content %}
+
+{% load static %}
+<table class="table table-striped" id="favorites-table">
+    <thead>
+      <tr>
+        <th>Drink Name</th>
+        <th>Produced By</th>
+        <th>Produced In</th>
+        <th>ABV</th>
+        <th>Type</th>
+        <th>Year</th>
+      </tr>
+    </thead>
+    <tbody>
+		  {% for item in drink_query %}
+        <tr>
+          <td>{{ item.d_name }}</td>
+          <td>{{ item.p_name }}</td>
+          <td>{{ item.p_location }}</td>
+          <td>{{ item.d_abv }}</td>
+          <td>{{ item.w_type }}</td>
+          <td>{{ item.w_year }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+</table>
+{% include '_retailer_stock.html' %}
+{% endblock %}

@@ -318,6 +318,7 @@ def search(request):
     context = {'query': query, 'form': form}
     return render(request, 'searchResults.html', context)
 
+@login_required
 def favorites(request):
     with connection.cursor() as cursor:
         cursor.execute('SELECT d_id, d_name, p_username, p_name, fav_count FROM (SELECT d_id, count(c_username) AS fav_count FROM favorites GROUP BY d_id) as favs NATURAL JOIN drink NATURAL JOIN producer ORDER BY fav_count DESC')
@@ -325,6 +326,38 @@ def favorites(request):
     context = {'query': query}
     return render(request, 'favorites.html', context)
 
+@login_required
+def displayDrinkDetails(request, d_id):
+    cursor = connection.cursor()
+    drink_id = d_id
+    drink_query=[]
+    stocked_by_query=[]
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * from drink NATURAL JOIN retailer NATURAL JOIN retail_inv WHERE d_id = %s", [drink_id])
+        stocked_by_query=dictfetchall(cursor)
+        cursor.execute("SELECT * from drink NATURAL JOIN producer NATURAL JOIN beer WHERE d_id = %s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'stocked_by_query': stocked_by_query, 'drink_query': drink_query}
+            return render(request, 'beerDetails.html', context)
+        cursor.execute("SELECT * from drink NATURAL JOIN producer NATURAL JOIN wine WHERE d_id = %s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'stocked_by_query': stocked_by_query, 'drink_query': drink_query}
+            return render(request, 'wineDetails.html', context)
+        cursor.execute("SELECT * from drink NATURAL JOIN producer NATURAL JOIN liquor WHERE d_id = %s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'stocked_by_query': stocked_by_query, 'drink_query': drink_query}
+            return render(request, 'liquorDetails.html', context)
+        cursor.execute("SELECT * FROM drink NATURAL JOIN producer WHERE d_id=%s", [drink_id])
+        drink_query = dictfetchall(cursor)
+        if len(drink_query) > 0:
+            context = {'stocked_by_query': stocked_by_query, 'drink_query': drink_query}
+            return render(request, 'drinkDetails.html', context)
+
+    messages.error(request, 'invalid drink id')
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
 
 def dictfetchall(cursor):
     "Return all rows from a cursor as a dict"

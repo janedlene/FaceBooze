@@ -1,0 +1,26 @@
+<br>
+<br>
+<br>
+<center>BUT WHERE CAN I GET IT?!?!?!?</center>
+<table class="table table-striped" id="favorites-table">
+    <thead>
+      <tr>
+        <th>Retailer Name</th>
+        <th>Retailer Address</th>
+        <th>Retailer Phone</th>
+        <th>Retailer Email</th>
+        <th>Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+		{% for item in stocked_by_query %}
+			<tr>
+				<td>{{ item.r_name }}</td>
+				<td>{{ item.r_location }}</td>
+				<td>{{ item.r_phone }}</td>
+				<td>{{ item.r_email }}</td>
+				<td>{{ item.quantity }}</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>
