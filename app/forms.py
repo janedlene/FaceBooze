@@ -50,8 +50,14 @@ class LiquorForm(ProducerAddDrinkForm):
     flavor = forms.CharField(label="Liquor Flavor", max_length=100)
 
 class RetailerAddStockForm(forms.Form):
-    d_id = forms.IntegerField(label="Drink ID", min_value=0)
-    quantity = forms.IntegerField(label="Quantity", min_value=0)
+
+
+    def __init__(self, choices, *args, **kwargs):
+        super(RetailerAddStockForm, self).__init__(*args, **kwargs)
+        self.fields['d_id'] = forms.ChoiceField(label="Drink", choices=choices)
+        self.fields['quantity'] = forms.IntegerField(label="Quantity", min_value=0)
+
+
 
 class SearchDrinkForm(forms.Form):
     search_string = forms.CharField(label='Search For Drinks', max_length=30)

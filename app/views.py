@@ -267,10 +267,18 @@ def retailer_profile(request, r_id):
 def retailer_add_stock(request):
     context = {}
     if request.method == 'GET':
-        form = RetailerAddStockForm()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT d_id, d_name, p_name FROM drink NATURAL JOIN producer")
+            d_list = dictfetchall(cursor)
+            options = [(d['d_id'], "{}, {}".format(d['d_name'], d['p_name'])) for d in d_list]
+        form = RetailerAddStockForm(options)
         context = {'title': 'Add a new stock item', 'form': form}
     elif request.method == 'POST':
-        form = RetailerAddStockForm(request.POST)
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT d_id, d_name, p_name FROM drink NATURAL JOIN producer")
+            d_list = dictfetchall(cursor)
+            options = [(d['d_id'], "{}, {}".format(d['d_name'], d['p_name'])) for d in d_list]
+        form = RetailerAddStockForm(options, request.POST)
         if form.is_valid():
             with connection.cursor() as cursor:
                 uname = request.session['uname']
